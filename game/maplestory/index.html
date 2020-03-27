@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <title>MapleStory Station</title>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+
+    <!-- Custom styles for this template -->
+    <style type="text/css">
+        body {
+            padding-top: 5rem;
+        }
+        .guides h2 {
+            padding-top: 20px;
+        }       
+        .starter-template {
+            padding: 3rem 1.5rem;
+            text-align: center;
+        }
+        table {
+            text-align: left; 
+            width: 100%; 
+        }
+        table tr th {
+            text-align: center
+        }
+        table tr td {
+            vertical-align: baseline;
+            width: 20%;
+        }
+        ol, table tr td p {
+            list-style-position: inside; 
+            padding-left:0; 
+            font-size: 0.80em;
+        }
+        .explanation {
+            list-style-position: inside; 
+            padding-left:0; 
+            font-size: 0.80em;
+            max-height: 200px; 
+            overflow-y: scroll;
+            padding: 5px;
+        
+        }
+.dropdown-submenu {
+    position: relative;
+}
+
+.dropdown-submenu .dropdown-menu {
+    top: 0;
+    left: 100%;
+    margin-top: -1px;
+}
+ul.subclass {
+   list-style-type: none;
+   margin-left: 0;
+   display:inline-block;
+   padding-left: 1em;
+   text-indent: -1em;
+   list-style-position: inside;
+}
+ul.subclass li {
+  padding-right: 1em;
+  text-indent: -1em;
+}
+
+ul.subclass a:before {
+  content: "→ ";
+  display: inline;
+}
+    </style>
+
+</head>
+
+
+<body>
+    <script>
+        var shiftWindow = function() { scrollBy(0, -70) };
+        if (location.hash) shiftWindow();
+        window.addEventListener("hashchange", shiftWindow);
+    </script>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+        <a class="navbar-brand" href="#">MapleStory</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+        <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                </li>
+<!--                 <li class="nav-item">
+                    <a class="nav-link" href="#">Link</a>
+                </li> -->                
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Classes</a>
+                    <div class="dropdown-menu" aria-labelledby="dropdown01" style="overflow-y: scroll; max-height: 400px; ">
+                        
+                        <strong> &nbsp;&nbsp; CHILD OF FURRY </strong>
+                        <a class="dropdown-item" href="#class-beasttamer">Beast Tamer</a>
+                        <!-- <a class="dropdown-item disabled" href="#class-">Zero</a> -->
+                        <hr/>
+                        <strong> &nbsp;&nbsp; CYGNUS KNIGHTS </strong>
+                        <!-- <a class="dropdown-item disabled" href="#class-">Blaze Wizard</a>
+                        <a class="dropdown-item disabled" href="#class-">Dawn Warrior</a>
+                        <a class="dropdown-item disabled" href="#class-">Mihile</a>
+                        <a class="dropdown-item disabled" href="#class-">Night Walker</a>
+                        <a class="dropdown-item disabled" href="#class-">Noblesse</a>
+                        <a class="dropdown-item disabled" href="#class-">Thunder Breaker</a> -->
+                        <a class="dropdown-item" href="#class-windarcher">Wind Archer</a>
+                        <hr/>
+                        <strong> &nbsp;&nbsp; EXPLORERS </strong>
+                        <!-- <a class="dropdown-item disabled" href="#class-">Bowman</a>
+                        <ul class="subclass">
+                        <li><a class="dropdown-item disabled" href="#class-">Bow Master</a></li>
+                        <li><a class="dropdown-item disabled" href="#class-">Marksman</a></li>
+                        </ul>
+                        <a class="dropdown-item disabled" href="#class-">Beginner</a>
+                        <a class="dropdown-item disabled" href="#class-">Magician</a>
+                        <a class="dropdown-item disabled" href="#class-">Bishop</a>
+                        <a class="dropdown-item disabled" href="#class-">Fire/Poison Mage</a>
+                        <a class="dropdown-item disabled" href="#class-">Ice/Lightning Mage</a>
+                        <a class="dropdown-item disabled" href="#class-">Pirate</a>
+                        <a class="dropdown-item disabled" href="#class-">Buccaneer</a>
+                        <a class="dropdown-item disabled" href="#class-">Corsair</a>
+                        <a class="dropdown-item disabled" href="#class-">Cannoneer</a> -->
+                        <a class="dropdown-item" href="#class-dualblade">Dual Blade&lowast;</a>
+                        <!-- <a class="dropdown-item disabled" href="#class-">Jett</a>
+                        <a class="dropdown-item disabled" href="#class-">Thief</a>
+                        <a class="dropdown-item disabled" href="#class-">Night Lord</a>
+                        <a class="dropdown-item disabled" href="#class-">Shadower</a>
+                        <a class="dropdown-item disabled" href="#class-">Warrior</a>
+                        <a class="dropdown-item disabled" href="#class-">Dark Knight</a>
+                        <a class="dropdown-item disabled" href="#class-">Hero</a>
+                        <a class="dropdown-item disabled" href="#class-">Paladin</a>
+                        <hr/>
+                        <strong> &nbsp;&nbsp; HERO </strong>
+                        <a class="dropdown-item disabled" href="#class-">Aran</a>
+                        <a class="dropdown-item disabled" href="#class-">Evan</a>
+                        <a class="dropdown-item disabled" href="#class-">Luminous</a>
+                        <a class="dropdown-item disabled" href="#class-">Mercedes</a>
+                        <a class="dropdown-item disabled" href="#class-">Phantom</a>
+                        <a class="dropdown-item disabled" href="#class-"></a>
+                        <a class="dropdown-item disabled" href="#class-"></a>
+                        <a class="dropdown-item disabled" href="#class-"></a>
+                        <a class="dropdown-item disabled" href="#class-"></a>
+                        <a class="dropdown-item disabled" href="#class-"></a>
+                        <a class="dropdown-item disabled" href="#class-"></a>
+                        <a class="dropdown-item disabled" href="#class-"></a> -->
+                        <hr/>
+                        <strong> &nbsp;&nbsp; RESISTANCE </strong>
+                        <a class="dropdown-item" href="#class-battlemage">Battle Mage</a>
+                        <!--<a class="dropdown-item" href="#">Something else here</a> -->
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Tools</a>
+                    <div class="dropdown-menu" aria-labelledby="dropdown01">
+                        <a class="dropdown-item" href="#tool-clocks">Clocks</a>
+<!--                         <a class="dropdown-item" href="#">Another action</a>
+                        <a class="dropdown-item" href="#">Something else here</a> -->
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Credits</a>
+                    <div class="dropdown-menu" aria-labelledby="dropdown01">
+                        <a class="dropdown-item" href="http://ayumilove.net/maplestory/">Ayumilove - Ayumilove.net</a>
+<!--                         <a class="dropdown-item" href="#">Another action</a>
+                        <a class="dropdown-item" href="#">Something else here</a> -->
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link disabled" href="#">Compiled and Researched by ShylentKnight</a>
+                </li>
+            </ul>
+<!--             <form class="form-inline my-2 my-lg-0">
+                <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            </form> -->
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="starter-template">
+            <h1>MapleStory</h1>
+            
+            <p class="lead">Guides and Stuff</p>
+            <hr />
+            <a class="twitter-timeline" data-height="500" href="https://twitter.com/MapleStory?ref_src=twsrc%5Etfw">Tweets by MapleStory</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+            <hr/><h1 id="class-">Classes</h1><hr/>
+<!-- BEAST TAMER GUIDE --> 
+            <div id="class-beasttamer">
+                <h2>Beast Tamer</h2>
+                <em>CHILD OF FURRY</em>
+                <h3>Skill Builds</h3>
+                                        <table>
+                           <tr>
+                                <th colspan="5" style="text-align: center">Beast Tamer Mule Build</th>
+                            </tr>
+                            <tr>
+                                <th>Goals</th>
+                                <th>Level 10 → 33</th>
+                                <th>Level 34 → 72</th>
+                                <th>Level 73 → 130</th>
+                            
+                            </tr>
+                            <tr>
+                                <td>
+                                <ol> 
+                                   <strong>Max Level Guide</strong>
+                                    <li>Level 10 → 53 (Leopard Skills)</li>
+                                    <li>Level 54 → 130 (Bear Skills)</li>
+                                    <li>Level 131 → 250 (Cat Skills)</li>
+                                    
+                                </ol>
+                                <ol> 
+                                   <strong>Level 130 Guide</strong>
+                                    <li>Level 10 → 33 (Leopard Skills +23 Levels)</li>
+                                    <li>Level 34 → 72 (Bear Skills +39 Levels)</li>
+                                    <li>Level 73 → 130 (Cat Skills +59 Levels)</li>
+                                    
+                                </ol>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li>Leopard’s Paw (MAX/20)</li>
+                                        <li>Thunder Dash (1/10)</li>
+                                        <li>Leopard Hide (MAX/15)</li>
+                                        <li>Leopard’s Pounce (MAX/20)</li>
+                                        <li>Rippling Feline Muscles (MAX/15)</li>
+                                        <strong>Start with Leopard skills for early-mid training. 71SP = 23 Levels.</strong>
+                                    </ol>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li>Paw Swipe (MAX/20)</li>
+                                        <li>Majestic Trumpet (6/20)</li>
+                                        <li>Well Fed (MAX/10)</li>
+                                        <li>Dumb Luck (MAX/10)</li>
+                                        <li>Deep Breath (1/10)</li>
+                                        <li>Fort Follow-Up (MAX/20)</li>
+                                        <li>Defense Ignorance (6/15)</li>
+                                        <li>Furious Strikes (MAX/25)</li>
+                                        <li>Bear Strength (MAX/15)</li>
+                                        <li>Really Deep Breath (1/20)</li>
+                                        <strong>Switch to Bear Skills for mid-late training + bossing. 114 SP = 39 Levels.</strong>
+                                    </ol>
+                                </td>
+                                <td>
+                                    <ol>
+                                        
+                                        <li>Friend Launcher (1/10)</li>
+                                        <li>Cat Wit (MAX/10)</li>
+                                        <li>Kitty Battle Squad (MAX/15)</li>
+                                        <li>Kitty Treats (3/15)</li>
+                                        <li>Purr-Powered (MAX/10)</li>
+                                        <li>Sticky Paws (MAX/20)</li>
+                                        <li>Meow Heal (1/20)</li>
+                                        <li>Cat’s Claws (MAX/20)</li>
+                                        <li>Meow Cure (4/10)</li>
+                                        <li>Purr Zone (MAX/15)</li>
+                                        <li>Meow Card (MAX/20)</li>
+                                        <li>Friend Launcher – Enhancer (1/15)</li>
+                                        <li>Mouser’s Insight (MAX/20)</li>
+                                        <li>Fire Kitty! (1/20)</li>
+                                        <li>Meow Revive (7/15)</li>
+                                        <li>Meow Gold Card (MAX/15)</li>
+                                        <li>Friends of Arby (MAX/20)</li>       
+                                    </ol>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="5"><strong>Explanation:</strong><p class="explanation">When you first start off as a Beast Tamer, you will train using Leopard Skills from Level 10 to Level 53. The SP (Skill Points) you gained from Level 10 to Level 33 is sufficient for you to max the essential skills as listed above. Once you have done that, use the remaining SP from Level 33-53 into Bear Skills. At Level 54, you will unlock Furious Strikes, which is a formidable skill that attacks enemies within the same platform as you and above. It has a wide attacking range, so use it to train Beast Tamer from Level 54 to 133. The SP you gained from Level 54 to 74 is sufficient to max the essential Bear Skills listed above too. From Level 75 to 133, all your gained SP will now focus on maxing Cat supportive skills since this will be your party mule which you will use to train your main character faster. It’s quite tempting to add extra SP into higher level Bear skills but that might require you to level up more and its kinda time consuming. Kitty Treats is left at Level 1 because the max level stats it offers which is +625 HP and MP doesn’t give too much of a major impact at higher levels, so those precious skill points could be distributed to other skills and/or animals.</p></td>      
+                            </tr>
+                            <tr>
+                                <td colspan="4"><p>Source(s): Ayumilove</p></td>
+                            </tr>
+                        </table>
+                <h4>PERFECT MAIN BEAST TAMER SKILL BUILD:</h4>
+<p>If you are making Beast Tamer as your main character, most senior players would only go for Bear + Cat combination route from the start without adding any points into Snow Leopard nor Hawk. With this method, you do not need to spend any NX Cash in resetting your skills, but training will be slightly slower in the early stage due to lack of mobility in Bear mode compared to Snow Leopard mode. Bear will be your primary damage dealer role while Cat will be your primary supportive role in Boss Raids.</p>
+                <table>
+                           <tr>
+                                <th colspan="5" style="text-align: center">Animal Builds</th>
+                            </tr>
+                            <tr>
+                                <th>Bear</th>
+                                <th>Leopard</th>
+                                <th>Hawk</th>
+                                <th>Cat</th>
+                                <th>Hyper Skills</th>
+                            </tr>
+                            <tr>
+                                <td>
+                                <ol>
+                                   
+                                    <li>Paw Swipe (MAX)</li>
+                                    <li>Majestic Trumpet (MAX)</li>
+                                    <li>Well Fed (MAX)</li>
+                                    <li>Dumb Luck (MAX)</li>
+                                    <li>Deep Breath (1)</li>
+                                    <li>Fort Follow-Up (MAX)</li>
+                                    <li>Defense Ignorance (MAX)</li>
+                                    <li>Furious Strikes (MAX)</li>
+                                    <li>Bear Strength (MAX)</li>
+                                    <li>Really Deep Breath (1) OR (MAX) </li>
+                                    <li>Li’l Fort (MAX)</li>
+                                    <li>Fort the Brave (19/20)</li>
+                                    <li>Bear Assault (MAX)</li>
+                                    <li>Fishy Slap (MAX)</li>
+                                    <li>Bear Reborn (1)</li>
+                                    <li>Billowing Trumpet (MAX)</li>
+                                    <li>Table Flip (MAX)</li>
+                                    <li>Bear Reborn (MAX)</li>
+                                    <strong>Max everything except Deep Breath, Really Deep Breath, Li’l Fort. Uses 237 SP, approximately 63 Levels.</strong>
+                                </ol>
+                                </td>
+                                <td>
+                                    <ol>
+                                        
+                                        <li>Leopard’s Paw (MAX)</li>
+                                        <li>Thunder Dash (1)</li>
+                                        <li>Leopard Hide (MAX)</li>
+                                        <li>Leopard’s Pounce (MAX)</li>
+                                        <li>Rippling Feline Muscles (MAX)</li>
+                                        <li>Macho Dance (MAX)</li>
+                                        <li>Macho Slam (MAX)</li>
+                                        <li>Bro Attack (MAX)</li>
+                                        <li>Leopard’s Roar (MAX)</li>
+                                        <li>Thunder Trail (1)</li>
+                                        <li>Macho Incarnate (MAX)</li>
+                                        <li>Three-Point Pounce (1)</li>
+                                        <li>Advanced Thunder Dash (1)</li>
+                                        <li> Deadly Fangs (MAX)</li>
+                                        <li>Lethal Lai (MAX)</li>
+                                        <li>Leopard Reflexes (MAX)</li>
+                                        <li>Party Time (MAX)</li>
+                                        <strong>Everything maxed except Thunder Dash, Advanced Thunder Dash, Thunder Trail. Uses 219 SP, approximately 73 Levels.</strong>
+                                    </ol>
+                                </td>
+                                <td>
+                                    <ol>
+                                        
+                                        <li>Formation Attack (MAX)</li>
+                                        <li>Sky Walk (MAX)</li>
+                                        <li>Vertical Draft (MAX)</li>
+                                        <li>Eka Express (MAX)</li>
+                                        <li>Fly (MAX)</li>
+                                        <li>Hawk Flock (MAX)</li>
+                                        <li>Max Mobility (MAX)</li>
+                                        <li>Defensive Formation (1)</li>
+                                        <li>Eka Glider (MAX)</li>
+                                        <li>Feather Cloak (1)</li>
+                                        <li>Regroup (MAX)</li>
+                                        <li>Raptor Talons (MAX)</li>
+                                        <li>Baby Bombers (3)</li>
+                                        <li>Bird’s-Eye View (MAX)</li>
+                                        <li>Veteran Formation (4)</li>
+                                        <li>Razor Beak (MAX)</li>
+                                        <li>Feather Boots (0)</li>
+                                        <li>Tornado Flight (0)</li>
+                                        <strong>Everything maxed except Defensive Formation, Feather Cloak, Baby Bombers, Veteran Formation, Feather Boots, Tornado Flight. Uses 160 SP, approximately 54 levels.</strong>
+                                    </ol>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li>Friend Launcher (MAX)</li>
+                                        <li>Cat Wit (MAX)</li>
+                                        <li>Kitty Battle Squad (MAX)</li>
+                                        <li>Kitty Treats (MAX)</li>
+                                        <li>Kitty Treats (MAX)</li>
+                                        <li>Purr-Powered (MAX)</li>
+                                        <li>Sticky Paws (MAX)</li>
+                                        <li>Meow Heal (1)</li>
+                                        <li>Cat’s Claws (MAX)</li>
+                                        <li>Meow Cure (1)</li>
+                                        <li>Purr Zone (1)</li>
+                                        <li>Meow Card (MAX)</li>
+                                        <li>Friend Launcher – Enhancer (MAX)</li>
+                                        <li>Mouser’s Insight (MAX)</li>
+                                        <li>Fire Kitty! (1)</li>
+                                        <li>Meow Revive (1)</li>
+                                        <li>Meow Gold Card (MAX)</li>
+                                        <li>Friends of Arby (MAX)</li>
+                                        <li>Cat’s Cradle Blitzkrieg (1)</li>
+                                        <strong>Everything maxed except Meow Heal, Meow Cure, Purr Zone, Fire Kitty, Meow Revive, Cat’s Cradle Blitzkrieg. Uses 196 SP, approximately 66 Levels.</strong>
+                                    </ol>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <strong></strong>
+                                        <li>Furious Strikes – Boss Rush</li>
+                                        <li>Furious Strikes – Reinforce</li>
+                                        <li>Furious Strikes – Critical Chance</li>
+                                        <li>Three-Point Pounce – Extra Strike</li>
+                                        <li>Three-Point Pounce – Reinforce</li>
+                                        <li>Team Roar</li>
+                                        <li>Group Bear Blaster</li>
+                                    </ol>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Explanation:</strong><p class="explanation">Paw Swipe is maxed, no doubt its the lowest level attacking skill, but it is boost up by another higher level Bear Attacking Skills such as Furious Strike. It’ll be a long used primary skill for Beast Tamer early levels. Majestic Trumpet is a great supportive skill where you lay tiles of flames, burning and killing enemies within vicinity. It isn’t similar to Poison Mist since it actually kills the enemy without leaving it at 1 HP. Spam it across the map for better efficiency. Deep Breath and Really Deep Breath are just utility skills, not for killing enemies. So you can leave them at Level 1 to unlock the higher level skills. If you often use Really Deep Breath for pulling enemies, you can max it. If you have leftover skills from Bear, it can be used to distribute to a different animal OR save those SP to max a higher level skill faster. The rest of the passive skills are maxed to get most out of Bear DPS and increased survivability during boss raiding and training at higher level maps. Bear Reborn is maxed last since you don’t get yourself killed often, well for me at least, unless you aren’t careful or AFK (away from keyboard) at an unsafe spot, or perhaps someone wants to kill your character by agitating a magical ranged monster to hit you. Li’l Fort is also maxed near the end, similarly to Bear Reborn. It is mostly useful against stationary targets such as Zakum since it has very short attacking range. If you don’t use Li’l Fort often, you can leave it as Level 1 and save SP for other animal or skills. Table Flip can be left at Level 1 since it does not deal much damage compared to Furious Strike as it has a slight delay before its able to flip the table (bear animation delayed it). Having said that, you can dish out more damage compared to Table Flip even its at max level. Fort the Brave is not required to max as both Level 19 and Level 20 presents the same stats, plus its a passive skill (no longer buff duration for higher skill level).</p></td>
+                                <td><strong>Explanation:</strong><p class="explanation">Training with Snow Leopard is a different league compared to Bear, because it is more mobile and does not leave you stationary in 1 spot. Use Snow Leopard when you can 1 hit kill enemies with your skills OR when enemies are spread out vastly across the maps. Most of the time, you will be using a combination of 2-3 skills in Snow Leopard Career. For instance, Leopard’s Paw + Leopard’s Pounce + Leopard’s Roar for flat platform, Macho Dance + Macho Slam + Macho Incarnate for maps that has no floating platforms above you, or go for Three-Point Pounce should you wish to train on maps that has multiple platform below you (it can hit enemies above you too, just make sure the platform above is close). Most Snow Leopard trainers would use the first 2 training method and seldom performing Thunder Dash or Advanced Thunder Dash to leave trail of blue flames originated from Thunder Trail, so these are optional skills. You will still need to add 1 SP (Skill Point) into them to unlock higher level skill above it. Max the other beneficial passive skills and your ultimate Party Time should you wish to spam that often to showoff your Leopard might!</p></td>
+                                <td><strong>Explanation:</strong><p class="explanation">This guide is aimed to gain Hawk Supportive Skill Buffs for party members such as Razor Beak, Bird’s Eye View for training and some travel convenience such as Eka Express and Regroup. Hawk isn’t a great animal for solo training. Since it lacks the raw damage and the mobs it can hit compared to Bear and Snow Leopard. So use this animal for support buff skills and travel aid.</p></td>
+                                <td><strong>Explanation:</strong><p class="explanation">This Cat Skill Build aims to make this as a mule party member where you run it on a different PC to buff up your main character who is solo training. Supportive skills such as Meow Heal, Meow Cure, Purr Zone and Meow Revive are optional skills which you can max at your choice. For me, I would rather have it standing-by providing passive effects and once-awhile receive card buffs. Do take note that each skill requires at least 1 SP to unlock a higher level skill and some skills require a certain number of Cat Skill Points to make higher skill available too! Cat seriously lacks attacking skills and most of it are heavily focus in supporting. Therefore, add SP into Cat once your main animal (Bear/Snow Leopard) has their main skills maxed to aid in your training. Mouser’s Insight is not maxed as Level 19 has the same effects as Level 20 (MAX)!</p></td>
+                                <td><strong>Explanation:</strong><p class="explanation"></p></td>
+                            </tr>
+                            <tr>
+                                <td colspan="5"><p>Source(s): Ayumilove</p></td>
+                            </tr>
+                        </table><hr/>
+                        </div>
+            
+<!--             <div id="class-zero">
+                <h2>Zero</h2>
+                <em>CHILD OF GOD</em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-blazewizard">
+                <h2>Blaze Wizard / Flame Wizard</h2>
+                <em>CYGNUS KNIGHT</em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-dawnwarrior">
+                <h2>Dawn Warrior / Soul Master</h2>
+                <em>CYGNUS KNIGHT</em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-mihile">
+                <h2>Mihile</h2>
+                <em>CYGNUS KNIGHT</em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-nightwalker">
+                <h2>Night Walker</h2>
+                <em>CYGNUS KNIGHT</em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-noblesse">
+                <h2>Noblesse</h2>
+                <em>CYGNUS KNIGHT</em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-thunderbreaker">
+                <h2>Thunder Breaker / Striker</h2>
+                <em>CYGNUS KNIGHT</em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div> -->
+<!-- WIND ARCHER -->
+            <div id="class-windarcher">
+            <h2>Wind Archer</h2>
+            <em>CYGNUS KNIGHT</em>
+            <h3>Skill Build (GMS)</h3>
+            <table>
+               <tr>
+                    <th colspan="5" style="text-align: center">Job Advancement</th>
+                </tr>
+                <tr>
+                    <th>1st - Wind Archer</th>
+                    <th>2nd - Wind Archer</th>
+                    <th>3rd - Wind Archer</th>
+                    <th>4th - Wind Archer</th>
+                    <th>Hyper Skills</th>
+                </tr>
+                <tr>
+                    <td>
+                    <ol>
+                       <strong>Everything maxed except Breeze Arrow.</strong>
+                        <li>Breeze Arrow (1)</li>
+                        <li>Wind Walk (MAX)</li>
+                        <li>Whispers of the Wind (MAX)</li>
+                        <li>Storm Elemental (MAX)</li>
+                        <li>Breeze Arrow (19/20)</li>
+                    </ol>
+                    </td>
+                    <td>
+                        <ol>
+                            <strong>Everything maxed except Gust Shot.</strong>
+                            <li>Fairy Spiral, Gust Shot, Trifling Wind I (1)</li>
+                            <li>Bow Mastery (5)</li>
+                            <li>Bow Booster (6)</li>
+                            <li>Sylvan Aid (MAX)</li>
+                            <li>Physical Training (MAX)</li>
+                            <li>Bow Mastery (MAX)</li>
+                            <li>Fairy Spiral (MAX)</li>
+                            <li>Trifling Wind I (MAX)</li>
+                            <li>Bow Booster (MAX)</li>
+                            <li>Gust Shot (19/20)</li>
+                        </ol>
+                    </td>
+                    <td>
+                        <ol>
+                            <strong>Everything maxed except Pinpoint Pierce.</strong>
+                            <li>Sentient Arrow, Featherweight, Second Wind, Pinpoint Pierce (1)</li>
+                            <li>Albatross (MAX)</li>
+                            <li>Sentient Arrow (MAX)</li>
+                            <li>Featherweight (MAX)</li>
+                            <li>Second Wind (MAX)</li>
+                            <li>Trifling Wind II (MAX)</li>
+                            <li>Emerald Flower (MAX)</li>
+                            <li>Pinpoint Pierce (14/20)</li>
+                        </ol>
+                    </td>
+                    <td>
+                        <ol>
+                            <strong>Everything maxed</strong>
+                            <li>Spiraling Vortex, Song of Heaven, Trifling Wind III, Albatross Max, Emerald Dust (1)</li>
+                            <li>Bow Expert (MAX)</li>
+                            <li>Albatross Max (MAX)</li>
+                            <li>Song of Heaven (MAX)</li>
+                            <li>Spiraling Vortex (MAX)</li>
+                            <li>Trifling Wind III (MAX)</li>
+                            <li>Wind Blessing (MAX)</li>
+                            <li>Sharp Eyes (MAX)</li>
+                            <li>Call of Cygnus (MAX)</li>
+                            <li>Emerald Dust (MAX)</li>
+                        </ol>
+                    </td>
+                    <td>
+                        <ol>
+                            <strong></strong>
+                            <li>Trifling Wind – Reinforce (MAX)</li>
+                            <li>Trifling Wind – Enhance (MAX)</li>
+                            <li>Trifling Wind – Double Chance (MAX)</li>
+                            <li>Song of Heaven – Reinforce (MAX)</li>
+                            <li>Song of Heaven – Boss Rush (MAX)</li>
+                            <li>Storm Bringer (MAX)</li>
+                            <li>Monsoon (MAX)</li>
+                            <li>Glory of the Guardians (MAX)</li>
+                        </ol>
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Explanation:</strong><p class="explanation">Put 1 SP on Breeze Shot as this will be your first Wind Archer attack when using a bow but I'd recommend using your cygnus elemental slash to conserve mp pots for later training if possible. Max Wind Walk then Whisper of the Winds. Max out Storm Elemental. Use the remaining SP on Breeze Arrow.</p></td>
+                    <td><strong>Explanation:</strong><p>Wind Archer primary attacking skill will be either Fairy Turn or Gust Shot, so pick which 1 you prefer to max. Fairy Turn has slightly more range than Gust Shot and does not consume any arrows to activate the skill.</p></td>
+                    <td><strong>Explanation:</strong>
+                    <p>Pinpoint Pierce vs Sentient Arrow. Pinpoint Pierce extra buff damage only works on itself and not on other skills. Therefore, max Sentient Arrow instead for easier mobbing during 3rd job training.</p></td>
+                    <td><strong>Explanation:</strong></td>
+                    <td><strong>Explanation:</strong></td>
+                </tr>
+                <tr>
+                    <td colspan="5"><p>Source(s): Ayumilove</p></td>
+                </tr>
+            </table><hr/>
+            </div>
+            
+            <!-- <div id="class-archer">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-bowmaster">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-marksman">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div> 
+            <div id="class-beginner">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-magician">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-bishop">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-firepoisonmagician">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-icelightningmagician">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-pirate">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-buccaneer">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-corsair">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-cannoneer">
+                <h2></h2>
+                <em>EXPLORER SPECIAL</em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p> 
+            </div> -->
+            <div id="class-dualblade">
+                <h2>Dual Blade</h2>
+                <em>EXPLORER SPECIAL</em>
+                <h3>Skill Build</h3>
+                <table>
+                           <tr>
+                                <th colspan="5" style="text-align: center">Job Advancement</th>
+                            </tr>
+                            <tr>
+                                <th>1st - Rogue</th>
+                                <th>1st+ - Blade Recruit</th>
+                                <th>2nd - Blade Acolyte</th>
+                                <th>2nd+ - Blade Specialist</th>
+                                
+                            </tr>
+                            <tr>
+                                <td>
+                                <ol>
+                                   <li>Bandit Slash (1)</li>
+                                   <li>Flash Jump (MAX)</li>
+                                   <li>Bandit Slash (MAX)</li>
+                                   <li>Side Step (MAX)</li>
+                                   <li>Dark Sight (MAX)</li>
+                                   <strong>Everything maxed.</strong>
+                                </ol>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li>Tornado Spin (1)</li>
+                                        <li>Katara Mastery (MAX)</li>
+                                        <li>Self Haste (MAX)</li>
+                                        <li>Tornado Spin (MAX)</li>
+                                        <strong>Everything maxed.</strong>
+                                    </ol>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li>Slash Storm (1)</li>
+                                        <li>Katara Booster (3)</li>
+                                        <li>Channel Karma (MAX)</li>
+                                        <li>Physical training (MAX)</li>
+                                        <li>Katara Booster (MAX)</li>
+                                        <li>Slash Storm (MAX)</li>
+                                        <li>Fatal Blow (MAX)</li>
+                                        <strong></strong>
+                                    </ol>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li>Flying Assaulter (MAX)</li>
+                                        <li>Venom (MAX)</li>
+                                        <li>Flash Bang (MAX)</li>
+                                        <li>Upper Stab (MAX)</li>
+                                        <strong></strong>
+                                    </ol>
+                                </td>
+                                
+                            </tr>
+                            <tr>
+                                <td><strong>Explanation:</strong><p class="explanation">Bandit Slash will be your primary attacking skill, add 1 SP into the skill to unlock it. First, max Flash Jump to speed up travel within towns and training grounds. Second, max Bandit Slash to improve your primary skill damage. Third, max Side Step for additional boost in your Avoidability Stats. More avoid means less damage absorbed, and that cuts down on HP potion consumption. Finally, max Dark Sight. It does not have much use for now except for avoiding being bump into monsters while on route to a particular destination.</p></td>
+                                <td><strong>Explanation:</strong><p class="explanation">Once you reach Level 20, add 1 SP (Skill Point) into Tornado Spin to replace Bandit Slash as the primary attacking skill. First, max Katara Mastery to reduce the damage gap between your base min and base max damage. This will allow you to deal damage closer to your max damage, thus improving damage for all skills. Next, max Self Haste to increase jump and move speed. Finally, max Tornado Spin to improve its damage on the skill.</p></td>
+                                <td> </td>
+                                <td><strong>Explanation:</strong><p class="explanation">In 2nd Job+ Training, you will be primarily using Flying Assaulter + Tornado Spin + Slash Storm Combo preferably for 1-2 hit fast kills. Therefore, max Flying Assaulter first. Flash Bang and Upper Stab isn’t useful for training purposes unless you are targeting slow or stationary monster especially bosses. Other than that, I recommend them maxed last. Venom can be maxed after Flying Assaulter to reduce enemy health a little for a good 2-hit kills. If you are 1 hitting monsters, Venom does not apply its effect here.</p></td>
+                                
+                            </tr>
+                            <tr>
+                                <th>3rd - Blade Lord</th>
+                                <th>4th - Blade Master</th>
+                                <th>Hyper Skills </th>
+                                <th></th>
+                            
+                            </tr>
+                            <tr>
+                                <td>
+                                <ol>
+                                   <li>Blade Ascension, Bloody Storm, Chains of Hell (1)</li>
+                                   <li>Shadow Meld (1)</li>
+                                   <li>Life Drain (MAX)</li>
+                                   <li>Mirror Image (MAX)</li>
+                                   <li>Blade Ascension (MAX)</li>
+                                   <li>Advanced Dark Sight (MAX)</li>
+                                   <li>Bloody Storm (MAX)</li>
+                                   <li>Shadow Meld (MAX)</li>
+                                   <li>Enveloping Darkness (MAX)</li>
+                                   <li> Chains of Hell (MAX)</li>
+                                   <strong></strong>
+                                </ol>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li>Blade Fury, Sharpness, Katara Expert (1)</li>
+                                        <li>Thorns (10)</li>
+                                        <li>Blade Fury (MAX)</li>
+                                        <li>Toxic Venom (MAX)</li>
+                                        <li>Sharpness (MAX)</li>
+                                        <li>Katara Expert (MAX)</li>
+                                        <li>Thorns (MAX)</li>
+                                        <li>Maple Warrior (MAX)</li>
+                                        <li>Final Cut (MAX)</li>
+                                        <li>Mirrored Target (MAX)</li>
+                                        <li>Phantom Blow (MAX)</li>
+                                        <li>Sudden Raid (MAX)</li>
+                                        <li>Hero’s Will (MAX)</li>
+                                        <strong>Everything maxed.</strong>
+                                    </ol>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li>Blade Fury – Reinforce (MAX)</li>
+                                        <li>Blade Fury – Guardbreak (MAX)</li>
+                                        <li>Phantom Blow – Reinforce (MAX)</li>
+                                        <li>Phantom Blow – Guardbreak (MAX)</li>
+                                        <li>Phantom Blow – Extra Strike (MAX)</li>
+                                        <li>Blade Clone (MAX)</li>
+                                        <li>Asura’s Anger (MAX)</li>
+                                        <li>Epic Adventure (MAX)</li>
+                                        <strong></strong>
+                                    </ol>
+                                </td>
+                                <td>
+                                </td>
+                                
+                            </tr>
+                            <tr>
+                                <td><strong>Explanation:</strong><p class="explanation">Dual Blade receives a new skill called Blade Ascension which allows you to attack enemies while jumping upwards, and allows you to combo with Flying Assaulter, followed by Bloody Storm should you wish to escape from dangerous enemies or to perform the finishing kill. Max Life Drain early to reduce HP Potion consumption. Now boost your overall skill damage with Mirror Image, followed by maximizing Blade Ascension full potential. Around this level, monsters are becoming a little more difficult to handle. Therefore, max Bloody Storm to deal heavy damage on high health monsters. Further improve your overall damage with Shadow Meld and Enveloping Darkness. Chains of Hell is maxed last if you have no intention to raid boss at this level.</p></td>
+                                <td><strong>Explanation:</strong><p class="explanation">Dual Blade 4th Job Primary attacking skill will be mostly Blade Fury for training and Phantom Blow for boss raiding. Add 1 SP (Skill Point) into Blade Fury, Sharpness and Katara Mastery for their initial stat boost benefits. Get at least Level 10 Thorns as this will help in providing some anti-knockback while being crowded in mobs of monsters. Now, max Blade Fury to unlock more monster targets. Proceed with maxing Toxic Venom to provide additional overtime damage, great against high health monsters. Next, increase your critical rate and damage with Sharpness, followed by improving minimum damage with Katara Expert. I would recommend maxing Thorns after Katara Expert to provide full-proof anti-knockback, very useful when you do not want to lose your position at platform while bossing/training. You can max either Maple Warrior or Final Cut whichever suits you to improve your overall damage. If you plan to boss early, you can max Phantom Blow first before Mirrored Target. Sudden Raid and Hero’s Will is maxed last as they are not used often due to their cooldown limitation.</p></td>
+                                <td colspan="2"></td>
+                                
+                            </tr>
+                            <tr>
+                                <td colspan="5"><p>Source(s): Ayumilove</p></td>
+                            </tr>
+                        </table><hr/>
+            </div>
+            <div id="class-jett">
+                <h2>Jett</h2>
+                <em>EXPLORER SPECIAL</em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <!--<div id="class-thief">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-nightlord">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-shadower">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-warrior">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-darkknight">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-hero">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-paladin">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-aran">
+                <h2></h2>
+                <em>HERO</em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-evan">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-luminous">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-mercedes">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-phantom">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-shade">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-illium">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-cadena">
+                <h2></h2>
+                <em>NOVA</em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-angelicbuster">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-kaiser">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+<!-- BATTLE MAGE -->
+           <hr/>
+            <div id="class-battlemage">
+                <h2>Battle Mage</h2>
+                <em>RESISTANCE</em>
+                <h3>Skill Build</h3>
+                <table>
+                           <tr>
+                                <th colspan="5" style="text-align: center">Job Advancement</th>
+                            </tr>
+                            <tr>
+                                <th>1st - Battle Mage</th>
+                                <th>2nd - Battle Mage</th>
+                                <th>3rd - Battle Mage</th>
+                                <th>4th - Battle Mage</th>
+                                <th>Hyper Skills</th>
+                            </tr>
+                            <tr>
+                                <td>
+                                <ol>
+                                   <li>Condemnation (auto-maxed)</li>
+                                   <li>Triple Blow, Hasty Aura, Combat Teleport, Staff Artist (1)</li>
+                                   <li>Combat Teleport (MAX)</li>
+                                   <li>Hasty Aura (MAX)</li>
+                                   <li>Staff Artist (MAX)</li>
+                                   <li>Triple Blow (MAX)</li>
+                                   <strong>Everything Maxed</strong>
+                                </ol>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li>Grim Contract I (auto-maxed).</li>
+                                        <li>Quad Blow, Dark Chain, Draining Aura, Staff Mastery (1)</li>
+                                        <li>Staff Mastery (5)</li>
+                                        <li>Staff Boost (6)</li>
+                                        <li>Staff Mastery (MAX)</li>
+                                        <li>High Wisdom (MAX)</li>
+                                        <li>Staff Boost (MAX)</li>
+                                        <li>Quad Blow (19/20)</li>
+                                        <li>Ordinary Conversion (MAX)</li>
+                                        <li>Draining Aura (MAX)</li>
+                                        <li>Dark Chain (MAX)</li>
+
+                                        <strong>Everything Maxed except Quad Blow</strong>
+                                    </ol>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li>Grim Contract II (auto-maxed)</li>
+                                        <li>Quintuple Blow, Battle Burst, Dark Shock, Blue Aura (1)</li>
+                                        <li>Battle Mastery (MAX)</li>
+                                        <li>Quintuple Blow (19/20)</li>
+                                        <li>Dark Shock (MAX)</li>
+                                        <li>Dark Conditioning (MAX)</li>
+                                        <li>Blue Aura (MAX)</li>
+                                        <li>Power Stance (MAX</li>
+                                        <li>Power Stance (MAX)</li>
+                                        <li>Battle Burst (MAX)</li>
+                            
+                                        <strong>Everything maxed except Quintuple Blow.</strong>
+                                    </ol>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li>Grim Contract III (auto-maxed)</li>
+                                        <li>Finishing Blow, Dark Genesis, Dark Aura, Staff Expert (1)</li>
+                                        <li>Battle Rage, Party Shield, Spell Boost (1)</li>
+                                        <li>Staff Expert (MAX)</li>
+                                        <li>Spell Boost (MAX)</li>
+                                        <li>Finishing Blow (MAX)</li>
+                                        <li>Dark Aura (MAX)</li>
+                                        <li>Dark Genesis (MAX)</li>
+                                        <li>Maple Warrior (MAX)</li>
+                                        <li>Battle Rage (MAX)</li>
+                                        <li>Party Shield (MAX)</li>
+                                        <li>Weakening Aura (MAX)</li>
+                                        <li>Hero’s Will (MAX)</li>
+                                        <strong>Everything Maxed.</strong>
+                                    </ol>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li></li>
+                                        <strong></strong>
+                                    </ol>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Explanation:</strong><p class="explanation">Battle Mage 1st Job primary attacking skill will be Triple Blow. Add 1 SP into Triple Blow, Hasty Aura, Combat Teleport and Staff Artist to gain their level 1 benefits. Max Combat Teleport and Yellow Aura first to traverse maps and reach your target quickly. Next, max Staff Artist to boost your damage and finally Triple Blow. Having Triple Blow maxed last is to reduce the MP cost that might be costly for unfunded players.</p></td>
+                                <td><strong>Explanation:</strong><p class="explanation"></p></td>
+                                <td><strong>Explanation:</strong><p class="explanation"></p></td>
+                                <td><strong>Explanation:</strong><p class="explanation"></p></td>
+                                <td><strong>Explanation:</strong><p class="explanation"></p></td>
+                            </tr>
+                            <tr>
+                                <td colspan="5"><p>Source(s): Ayumilove</p></td>
+                            </tr>
+                        </table>
+            </div>
+<!--
+            <div id="class-blaster">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-citizen">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-demonavenger">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-demonslayer">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-mechanic">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-wildhunter">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-xenon">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-ayame">
+                <h2></h2>
+                <em>SENGOKU</em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-hayato">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-kanna">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-kinesis">
+                <h2></h2>
+                <em>SPECIAL</em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+            <div id="class-pinkbean">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div> -->
+            <div id="class-cadena">
+                <h2>Cadena</h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <table>
+                           <tr>
+                                <th colspan="5" style="text-align: center">Job Advancement</th>
+                            </tr>
+                            <tr>
+                                <th>1st - Cadena</th>
+                                <th>2nd - Cadena</th>
+                                <th>3rd - Cadena</th>
+                                <th>4th - Cadena</th>
+                                <th>Hyper Skills</th>
+                            </tr>
+                            <tr>
+                                <td>
+                                <ol>
+                                    <li>Chain Arts: Thrash, Chain Arts: Pursuit, Summon Scimitar (1)</li>
+                                    <li>The Way of Shadows (MAX)</li>
+                                    <li>Uncanny Luck (MAX)</li>
+                                    <li>Shadowsteps (MAX)</li>
+                                    <li>Chain Arts: Thrash (MAX)</li>
+                                    <li>Chain Arts: Pursuit (MAX)</li>
+                                    <li>Summon Scimitar (MAX)</li>
+                                   <strong>Everything Maxed.</strong>
+                                </ol>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li>Chain Arts: Thrash II, Summon Shuriken, Muscle Memory (1)</li>
+                                        <li>Weapon Mastery (MAX)</li>
+                                        <li>Weapon Booster (MAX)</li>
+                                        <li>Wisdom of Shadows (MAX)</li>
+                                        <li>Physical Training (MAX)</li>
+                                        <li>Chain Arts: Thrash II (MAX)</li>
+                                        <li>Summon Shuriken (MAX)</li>
+                                        <li>Muscle Memory (MAX)</li>
+                                        <li>Summon Claw (MAX)</li>
+                                        <strong>Everything maxed.</strong>
+                                    </ol>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li>Muscle Memory II, Summon Shotgun, Summon Decoy Bomb (1)</li>
+                                        <li>Summon Daggers, Attack Cheap Shot, Chain Arts: Thrash III (1)</li>
+                                        <li>Chain Arts: Thrash III (MAX)</li>
+                                        <li>Muscle Memory II (MAX)</li>
+                                        <li>Attack Cheap Shot (MAX)</li>
+                                        <li>Keen Eye (MAX)</li>
+                                        <li>Determination (MAX)</li>
+                                        <li>Summon Shotgun (MAX)</li>
+                                        <li>Summon Daggers (MAX)</li>
+                                        <li>Summon Decoy Bomb (MAX)</li>
+                                        <strong>Everything maxed.</strong>
+                                    </ol>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li>Chain Arts: Thrash IV, Chain Arts: Reign of Chains, Expert Weapons Mastery (1)</li>
+                                        <li>Muscle Memory III, Summon Brick, Summon Spiked Bat (1)</li>
+                                        <li>Chain Arts: Takedown, Wisdom of Shadows II, Cheap Shot II (1)</li>
+                                        <li>Weapon Expert (MAX)</li>
+                                        <li>Wisdom of Shadows II (MAX)</li>
+                                        <li>Chain Arts: Thrash IV (MAX)</li>
+                                        <li>Muscle Memory III (MAX)</li>
+                                        <li>Cheap Shot II (MAX)</li>
+                                        <li>Chain Arts: Reign of Chains (MAX)</li>
+                                        <li>Nova’s Warrior (MAX)</li>
+                                        <li>Chain Arts: Takedown (MAX)</li>
+                                        <li>Summon Brick (MAX)</li>
+                                        <li>Summon Spiked Bat (MAX)</li>
+                                        <li>Nova Hero’s Will (MAX)</li>
+                                        <strong>Everything maxed.</strong>
+                                    </ol>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li>Lv.149 – Chain Arts: Thrash – Reinforce (Passive)</li>
+                                        <li>Lv.162 – Chain-less Arts – Critical Chance (Passive)</li>
+                                        <li>Lv.177 – Chain Arts: Beatdown – Shockwave Reinforce (Passive)</li>
+                                        <li>Lv.183 – Chain-less Arts – Boss Rush (Passive)</li>
+                                        <li>Lv.195 – Chain Arts: Beatdown – Cooldown Cutter (Passive)</li>
+                                        <li>Lv.150 – Veteran Shadowdealer (Active)</li>
+                                        <li>Lv.170 – Chain Arts: Crush (Active)</li>
+                                        <li>Lv.200 – Shadowdealer’s Elixir (Supportive)</li>
+                                        <strong></strong>
+                                    </ol>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Explanation:</strong><p class="explanation">-</p></td>
+                                <td><strong>Explanation:</strong><p class="explanation"></p></td>
+                                <td><strong>Explanation:</strong><p class="explanation"></p></td>
+                                <td><strong>Explanation:</strong><p class="explanation"></p></td>
+                                <td><strong>Explanation:</strong><p class="explanation"></p></td>
+                            </tr>
+                            <tr>
+                                <td colspan="5"><p>Source(s): Ayumilove</p></td>
+                            </tr>
+                        </table>
+            </div>
+            <div id="guide-grinding">
+                <h2>MAPLESTORY GRINDING GUIDE</h2>
+                <em>TRAINING SPOTS &amp; METHODS</em>
+                <h3>GRINDING GUIDE</h3>
+                <ul style="text-align: left; list-style-type:square;">
+                    <li>001-010	Lv.1 Tutorial or Job Specific Quests</li>
+                    <li>010-015	Lv.10 Green Mushroom → Henesys: Spore Hill</li>
+                    <li>015-020	Lv.15 Stone Golem → Henesys: Golem’s Temple Entrance</li>
+                    <li>020-030	Lv.19 Flaming Mixed Golem → Henesys: Golem Temple 3</li>
+                    <li>030-040	Lv.35 Coconut Slime → Gold Beach: Beachgrass Dunes 1</li>
+                    <li>040-050	Lv.45 Wraith → Kerning City Subway Line 1 Area 3</li>
+                    <li>050-055	Lv.55 Wild Boar → Perion: Wild Boar Land</li>
+                    <li>055-070	Lv.62 Skeledog → Perion: Excavation Intermission Area</li>
+                    <li>055-070	Lv.66 Copper Drake → Sleepywood: Silent Swamp?</li>
+                    <li>060-075	Lv.69 Dark Drake → Sleepywood: Cave Exit (via Chilly Cave)</li>
+                    <li>060-090	Lv.90 Slimy → Singapore: Mysterious Path 3 (MSEA)</li>
+                    <li>075-090	Lv.81 White Fang → El Nath: Ice Valley 2</li>
+                    <li>075-100	Lv.89 Sand Rat → Nihal Desert: Sahel 2</li>
+                    <li>075-100	Lv.90 Dark Dwarf → Nihal Desert: The Desert of Serenity</li>
+                    <li>080-110	Lv.93 Mithril Mutae → Magatia: Alcadno, Lab Area B-1</li>
+                    <li>080-110	Lv.95 Roid → Magatia: Alcadno, Lab Area C-1</li>
+                    <li>110-120	Lv.113 Robo → Ludibirum: Toy Factory Apparatus Room</li>
+                    <li>100-120	Lv.119 Dark Death Teddy → Vampire Castle: Bleak Hallway (MSEA)</li>
+                    <li>120-163	Lv.120 Dark Bearwolf (Mini Boss) → Vampire Castle: Dim Light (MSEA)</li>
+                    <li>120-140	Lv.129 Jar → Herb Town: 50-Year-Old Herb Garden</li>
+                    <li>120-140	Lv.130 Moon Bunny → Korean Folk Town: Black Mountain Entrance</li>
+                    <li>130-140	Lv.145 Biner → Singapore: Central Way 1 (GMS)</li>
+                    <li>140-150	Lv.150 Nest Golem → Leafre Dragon Nest (MSEA)</li>
+                    <li>150-160	Lv.152 Mantis → Stone Colossus: Colossus West Road 2</li>
+                    <li>140-160	Lv.154 Pac Pinky → Singapore: Ghost Ship 1 (GMS)</li>
+                    <li>140-160	Lv.155 Slimy → Singapore: Mysterious Path 3 (GMS)</li>
+                    <li>150-165	Lv.157 Mr. Anchor → Singapore: Ghost Ship 6 (GMS)</li>
+                    <li>150-165	Lv.158 Poison Hornet → Stone Colossus: Swarm Habitat 3</li>
+                    <li>150-170	Lv.163 Dreamy Ghost → Zipangu: Encounter with the Buddha</li>
+                    <li>163-200	Lv. 167 Extra A &amp; B → Zipangu: Parking Lot (MSEA)</li>
+                    <li>165-180	Lv. 177 Adv. Knight A → Knight Stronghold: Knight’s Chamber 1</li>
+                    <li>180-190	Lv. 184 Adv. Knight E → Knight Stronghold: Hall of Honor</li>
+                    <li>190-210	Lv.198 Ancient Mixed Golem → Twilight Perion: Warrior Ground</li>
+                    <li>190-210	Scrapyard Hill 4 | Mechanical Grave Hill 4</li>
+                </ul>
+            </div>
+<!--             <div id="class-">
+                <h2></h2>
+                <em></em>
+                <h3>Skill Build</h3>
+                <p>Coming Soon</p>
+            </div>
+
+            
+                        <div id="class-">
+                           <h2></h2>
+                        <h3>Skill Build (GMS)</h3>
+                        <table>
+                           <tr>
+                                <th colspan="5" style="text-align: center">Job Advancement</th>
+                            </tr>
+                            <tr>
+                                <th>1st - </th>
+                                <th>2nd - </th>
+                                <th>3rd - </th>
+                                <th>4th - </th>
+                                <th>Hyper Skills</th>
+                            </tr>
+                            <tr>
+                                <td>
+                                <ol>
+                                   <li></li>
+                                   <strong></strong>
+                                </ol>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li></li>
+                                        <strong></strong>
+                                    </ol>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li></li>
+                                        <strong></strong>
+                                    </ol>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li></li>
+                                        <strong></strong>
+                                    </ol>
+                                </td>
+                                <td>
+                                    <ol>
+                                        <li></li>
+                                        <strong></strong>
+                                    </ol>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Explanation:</strong><p class="explanation"></p></td>
+                                <td><strong>Explanation:</strong><p class="explanation"></p></td>
+                                <td><strong>Explanation:</strong><p class="explanation"></p></td>
+                                <td><strong>Explanation:</strong><p class="explanation"></p></td>
+                                <td><strong>Explanation:</strong><p class="explanation"></p></td>
+                            </tr>
+                            <tr>
+                                <td colspan="5"><p>Source(s): Ayumilove</p></td>
+                            </tr>
+                        </table>
+                        </div> -->
+            <section id="toolssection" style="min-height: 800px;">
+            <hr/><h1>Tools</h1><hr/>
+            <h2 id="tool-clocks">World Clocks</h2>
+            <table>
+                <tr>
+                   <td><iframe src="http://free.timeanddate.com/clock/i5v7i7wb/n1440/fn16/fs16/fc888/tc000/ftbu/bas2/bat6/bacfff/pa8/tt0/th2/ta1/tb4" frameborder="0" width="267" height="58"></iframe></td>
+                    <td><iframe src="http://free.timeanddate.com/clock/i5uz8dek/n47/fn16/fs16/fc888/tc000/ftb/bas2/bat6/bacfff/pa8/tt0/th2/ta1/tb4" frameborder="0" width="267" height="58"></iframe></td>
+                    <td><iframe src="http://free.timeanddate.com/clock/i5uz8dek/n137/fn16/fs16/fc888/tc000/ftb/bas2/bat6/bacfff/pa8/tt0/th2/ta1/tb4" frameborder="0" width="267" height="58"></iframe></td>
+                    <td><iframe src="http://free.timeanddate.com/clock/i5uz8dek/n2114/fn16/fs16/fc888/tc000/ftb/bas2/bat6/bacfff/pa8/tt0/th2/ta1/tb4" frameborder="0" width="267" height="58"></iframe></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td><iframe src="http://free.timeanddate.com/clock/i61crlwd/n240/tlau/fn16/fs16/fc888/tc000/bo2/pa8/tt0/tw1/th2/ta1/tb4" frameborder="0" width="267" height="58"></iframe></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </table>
+            
+            
+            </section>
+
+
+        </div>
+    </div>
+    <!-- /.container -->
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-b/U6ypiBEHpOf/4+1nzFpr53nxSS+GLCkfwBdFNTxtclqqenISfwAzpKaMNFNmj4" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script>
+
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script>
+        (function() {
+            'use strict'
+
+            if (navigator.userAgent.match(/IEMobile\/10\.0/)) {
+                var msViewportStyle = document.createElement('style')
+                msViewportStyle.appendChild(
+                    document.createTextNode(
+                        '@-ms-viewport{width:auto!important}'
+                    )
+                )
+                document.head.appendChild(msViewportStyle)
+            }
+
+        }())
+    </script>
+    
+
+</body>
+</html>
