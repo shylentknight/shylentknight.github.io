@@ -479,7 +479,8 @@ nav a:hover::before {
 	padding-left: 7.5px;
 }
 
-.third-content .first-section .left-content {
+
+/** .third-content .first-section .left-content {
 	margin-right: 15px;
 	margin-top: 12px;
 }
@@ -499,7 +500,7 @@ nav a:hover::before {
 
 .third-content .second-section .left-image {
 	margin-right: 15px;
-}
+} 
 
 .third-content h2 {
 	font-size: 24px;
@@ -512,7 +513,50 @@ nav a:hover::before {
 	padding-bottom: 10px;
 	margin-bottom: 20px;
 	margin-top: 0px;
+} **/
+
+/** Link Styles Start (I know this is bad practice but it works) **/
+
+.third-content .link-btn {
+	display: inline-block;
 }
+
+.third-content .link-btn {
+	display: inline-block;
+    width: 100%;
+	padding: 8px 15px;
+	font-size: 13px;
+    text-align: center;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	text-decoration: none;
+	transition: all 0.5s;
+    margin: 10px;
+}
+
+.third-content .twitch-style {
+    background-color:  transparent;
+	border: 2px solid #6441A4;
+	color: #6441A4;
+}
+
+.third-content .twitch-style:hover {
+	color: #fff;
+	background-color: #6441A4;
+}
+
+.third-content .discord-style {
+    background-color:  transparent;
+	border: 2px solid #7289DA;
+    color: #7289DA;
+}
+
+.third-content .discord-style:hover {
+	color: #fff;
+	background-color: #7289DA;
+}
+
+/** Link Styles End **/
 
 .third-content p {
 	font-size: 13px;
@@ -540,6 +584,11 @@ nav a:hover::before {
 	padding: 0px;
 }
 
+.third-content .card {
+    width: 180px;
+    margin: 25px;
+    float: left;
+}
 
 .fourth-content {
 	padding: 5px;
