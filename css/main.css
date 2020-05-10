@@ -789,6 +789,10 @@ nav a:hover::before {
 		margin-right: 0px;
 		margin-bottom: 30px;
 	}
+    
+    .second-content right-image { 
+        max-width: 75%;
+    }
 
 	.third-content .first-section {
 		border-bottom: 1px solid rgba(250,250,250,0.3);
