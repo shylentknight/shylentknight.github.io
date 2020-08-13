@@ -515,7 +515,13 @@ nav a:hover::before {
 	margin-top: 0px;
 } **/
 
-/** Link Styles Start (I know this is bad practice but it works) **/
+/** Link Styles Start (I know this is bad practice but it works for me) **/
+
+.third-content .linklogo {
+    width: 100%;
+    padding-left: 10%;
+    margin: auto;
+}
 
 .third-content .link-btn {
 	display: inline-block;
@@ -524,7 +530,7 @@ nav a:hover::before {
 .third-content .link-btn {
 	display: inline-block;
     width: 100%;
-	padding: 8px 15px;
+	padding: 5px;
 	font-size: 13px;
     text-align: center;
 	text-transform: uppercase;
@@ -554,6 +560,37 @@ nav a:hover::before {
 .third-content .discord-style:hover {
 	color: #fff;
 	background-color: #7289DA;
+}
+.third-content .fb-style {
+    background-color:  transparent;
+	border: 2px solid #005fec;
+    color: #005fec;
+}
+
+.third-content .fb-style:hover {
+	color: #fff;
+	background-color: #005fec;
+}
+.third-content .dlive-style {
+    background-color:  transparent;
+	border: 2px solid #ffd300;
+    color: #ffd300;
+}
+
+.third-content .dlive-style:hover {
+	color: #000;
+	background-color: #ffd300;
+}
+
+.third-content .periscope-style {
+    background-color:  transparent;
+	border: 2px solid #40a4c4;
+    color: #40a4c4;
+}
+
+.third-content .periscope-style:hover {
+	color: #000;
+	background-color: #40a4c4;
 }
 
 /** Link Styles End **/
