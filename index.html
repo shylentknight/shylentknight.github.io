@@ -27,17 +27,30 @@ https://templatemo.com/tm-512-moonlight
     </head>
 
 <body>
-    <div id="fb-root"></div>
-    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v6.0"></script>
-    <div class="sequence">
-  
-      <div class="seq-preloader">
-        <svg width="39" height="16" viewBox="0 0 39 16" xmlns="http://www.w3.org/2000/svg" class="seq-preload-indicator"><g fill="#F96D38"><path class="seq-preload-circle seq-preload-circle-1" d="M3.999 12.012c2.209 0 3.999-1.791 3.999-3.999s-1.79-3.999-3.999-3.999-3.999 1.791-3.999 3.999 1.79 3.999 3.999 3.999z"/><path class="seq-preload-circle seq-preload-circle-2" d="M15.996 13.468c3.018 0 5.465-2.447 5.465-5.466 0-3.018-2.447-5.465-5.465-5.465-3.019 0-5.466 2.447-5.466 5.465 0 3.019 2.447 5.466 5.466 5.466z"/><path class="seq-preload-circle seq-preload-circle-3" d="M31.322 15.334c4.049 0 7.332-3.282 7.332-7.332 0-4.049-3.282-7.332-7.332-7.332s-7.332 3.283-7.332 7.332c0 4.05 3.283 7.332 7.332 7.332z"/></g></svg>
+<!-- Load Facebook SDK for JavaScript -->
+      <div id="fb-root"></div>
+      <script>
+        window.fbAsyncInit = function() {
+          FB.init({
+            xfbml            : true,
+            version          : 'v8.0'
+          });
+        };
+
+        (function(d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s); js.id = id;
+        js.src = 'https://connect.facebook.net/en_US/sdk/xfbml.customerchat.js';
+        fjs.parentNode.insertBefore(js, fjs);
+      }(document, 'script', 'facebook-jssdk'));</script>
+
+      <!-- Your Chat Plugin code -->
+      <div class="fb-customerchat"
+        attribution=setup_tool
+        page_id="476099183132966"
+  theme_color="#fa3c4c">
       </div>
-      
-    </div>
-    
-  
         <nav>
           <div class="logo">
               <img src="img/sk_logo.png" alt="">
@@ -51,6 +64,7 @@ https://templatemo.com/tm-512-moonlight
             <li><a href="#3"><i class="fa fa-external-link-alt"></i> <em>Links</em></a></li>
             <li><a href="#4"><i class="fa fa-tag"></i> <em>IGN</em></a></li> 
             <li><a href="#5"><i class="fa fa-envelope"></i> <em>Social</em></a></li>
+            <li><a href="#6"><i class="fa fa-gamepad"></i> <em>Giveaway</em></a></li>
           </ul>
         </nav>
 <!-- SLIDE 1 -->         
@@ -312,29 +326,9 @@ https://templatemo.com/tm-512-moonlight
           </div>
 <!-- SLIDE 5 --> 
           <div class="slide" id="5">
-            <div class="content fifth-content">
-                <div class="container-fluid">
-                    <div class="col-md-6" >
-                        <div id="facebook" class="fb-page" 
-  data-tabs="events,messages"
-  data-href="https://www.facebook.com/ShylentKnight-476099183132966/"
-  data-adapt-container-width="true"></div>
-                       
-                    </div>
-                    <div class="col-md-6">
-                        <div id="twitter" style="max-width: 500px;">
-                        <a class="twitter-timeline" data-height="500" data-theme="light" href="https://twitter.com/ShylentKnight?ref_src=twsrc%5Etfw&text=Hello%20ShylentKnight" >Tweets by ShylentKnight</a> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-                        <a href="https://twitter.com/messages/compose?recipient_id=1099251766812598273" class="twitter-dm-button" data-screen-name="@ShylentKnight"> 
-                        Message ShylentKnight</a>
-                        </div>
-                    </div>
-                    </div>
-                </div>
-            </div>
           </div>
-        </div>
-
-        <div class="footer">
+          
+          <div class="footer">
           <div class="content">
               <p>Copyright &copy; 2020 ShylentKnight | Based off the <a rel="nofollow" href="https://templatemo.com/tm-512-moonlight">Moonlight</a> Template </p>
           </div>
