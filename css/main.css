@@ -784,9 +784,9 @@ nav a:hover::before {
 }
 
 .footer .content {
-	left: 30%;
+	left: 0;
 	width: 70%;
-	max-width: 70%;
+	max-width: 90%;
 	position: absolute;
 	bottom: 0;
 	right: 0;
@@ -814,6 +814,17 @@ nav a:hover::before {
 	nav ul {
   		margin-left: 25px;
   	}
+    
+    .footer .content {
+	left: 0;
+	width: 70%;
+	max-width: 90%;
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	display: inline-block;
+}
+
 
 	.first-content {
 		text-align: center;
@@ -897,6 +908,17 @@ nav a:hover::before {
 		line-height: 20px;
 		text-align: center;
 	}
+    
+    .footer .content {
+	left: 0;
+	width: 70%;
+	max-width: 90%;
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	display: inline-block;
+}
+
 
 	.first-content {
 		padding: 30px 5px;
@@ -938,4 +960,15 @@ nav a:hover::before {
 	nav a {
 	  	padding: 15px 20px;
 	}
+    
+    .footer .content {
+	left: 0;
+	width: 70%;
+	max-width: 90%;
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	display: inline-block;
+}
+
 }
