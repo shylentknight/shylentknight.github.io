@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Harvest Clicker (Visual Plots)</title>
+    <title>Harvest Clicker (Offline/Online)</title>
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Load Inter Font -->
@@ -39,7 +39,7 @@
             updateDoc,
             GoogleAuthProvider,
             signInWithPopup,
-            deleteDoc // Added for cleanup
+            deleteDoc
         };
     </script>
     <style>
@@ -88,7 +88,6 @@
 </head>
 <body class="p-4 sm:p-8 flex justify-center min-h-screen">
 
-    <!-- Updated: Removed max-w-lg, now uses max-w-7xl for wide screens -->
     <div id="app" class="w-full max-w-7xl lg:px-8">
         <header class="text-center mb-6">
             <h1 class="text-4xl font-extrabold text-green-700 tracking-tight">Harvest Clicker 🚜</h1>
@@ -103,68 +102,64 @@
             <!-- ========================================================================= -->
             <div class="lg:col-span-2 space-y-6">
                 
-                <!-- Row 1: Top Bar (Money, Auth, Profile) - 1 or 2 columns based on screen size -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Money Display & Auth Status/Action -->
+                <!-- Row 1: Top Bar (Money, Auth, Mode Switch) - 1 or 2 columns based on screen size -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Money Display -->
                     <div class="card bg-yellow-100 p-4 rounded-xl flex justify-between items-center shadow-lg border-2 border-yellow-500">
-                        <span class="text-2xl font-bold text-yellow-800 flex items-center">
-                            💰 Money: <span id="money-display" class="ml-2">0</span>
+                        <span class="text-xl font-bold text-yellow-800 flex items-center">
+                            💰 <span class="ml-2">Money:</span> <span id="money-display" class="ml-2 text-2xl">0</span>
                         </span>
-                        <div class="text-sm text-right">
-                            <div class="text-xs text-gray-500 mb-1" id="user-id-display">Loading User...</div>
-                            <button id="auth-button" onclick="handleAuthAction()" class="px-3 py-1 text-xs font-semibold rounded-lg transition bg-blue-500 hover:bg-blue-600 text-white">
-                                Loading...
-                            </button>
-                        </div>
                     </div>
 
-                    <!-- User Profile/Username Section -->
+                    <!-- Auth Status/Action -->
+                    <div class="card bg-white p-3 rounded-xl flex flex-col justify-center items-center shadow-md border-2 border-gray-300">
+                        <div class="text-xs text-gray-500 mb-1" id="user-id-display">Loading User...</div>
+                        <button id="auth-button" onclick="handleAuthAction()" class="w-full px-3 py-1 text-xs font-semibold rounded-lg transition bg-blue-500 hover:bg-blue-600 text-white">
+                            Loading...
+                        </button>
+                    </div>
+
+                    <!-- New Mode Switch -->
+                    <div class="card bg-white p-3 rounded-xl flex flex-col justify-center items-center shadow-md border-2 border-gray-300">
+                        <div class="text-xs text-gray-500 mb-1" id="mode-status-display">Mode: Local Save</div>
+                        <button id="mode-switch-button" onclick="handleModeSwitch()" class="w-full px-3 py-1 text-xs font-semibold rounded-lg transition bg-purple-500 hover:bg-purple-600 text-white disabled:bg-gray-400">
+                            Mode: Local 🏠
+                        </button>
+                    </div>
+
+                </div>
+                
+                <!-- Row 2: Profile & Actions/Upgrades - 1 column on mobile, 2 columns on medium/large screens -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- User Profile/Username Section (Left 1/3 of desktop layout) -->
                     <section class="mb-0">
-                        <h2 class="text-xl font-bold text-green-700 mb-3 md:hidden">User Profile</h2>
+                        <h2 class="text-xl font-bold text-green-700 mb-3">User Profile</h2>
                         <div class="flex card bg-white p-4 rounded-xl shadow-md border-2 border-gray-300">
                             <input type="text" id="username-input" placeholder="Enter your unique username" class="flex-grow p-2 border border-gray-300 rounded-l-lg focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100" maxlength="20">
                             <button id="set-username-btn" onclick="updateUsername()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-r-lg transition disabled:bg-gray-400">Set Username</button>
                         </div>
                         <p id="username-status" class="text-xs mt-2 text-gray-500 text-center">Your current display name is: <span id="current-display-name">Loading...</span></p>
-                    </section>
-                </div>
-                
-                <!-- Row 2: Farm Plots & Upgrades/Actions - 1 column on mobile, 2 columns on medium/large screens -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                    <!-- Farm Plots Visual Section (Middle 1/3 of desktop layout) -->
-                    <section class="mb-0">
-                        <h2 class="text-xl font-bold text-green-700 mb-3">Your Farm (<span id="plots-count-display">0</span>/<span id="plot-capacity-display-farm">0</span> plots)</h2>
-                        <!-- Scrollable container for the farm plots -->
-                        <div id="farm-plots-container" class="grid grid-cols-5 gap-2 p-3 bg-green-200 rounded-xl border-2 border-green-500 lg:h-96 overflow-y-auto">
-                            <!-- Plots dynamically generated here -->
+                        
+                        <h2 class="text-xl font-bold text-green-700 mb-3 mt-6">Actions</h2>
+                        <div class="grid grid-cols-3 gap-3">
+                            <button id="plant-btn" onclick="plant()" class="flex flex-col items-center justify-center p-3 rounded-xl bg-lime-600 hover:bg-lime-700 text-white font-bold transition duration-150 transform hover:scale-105 active:scale-95 disabled:opacity-50 h-24">
+                                <span class="text-2xl">➕</span>
+                                <span>Plant (1 Seed)</span>
+                            </button>
+                            <button id="water-btn" onclick="water()" class="flex flex-col items-center justify-center p-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition duration-150 transform hover:scale-105 active:scale-95 disabled:opacity-50 h-24">
+                                <span class="text-2xl">💧</span>
+                                <span>Refill Water</span>
+                            </button>
+                            <button id="harvest-btn" onclick="harvest()" class="flex flex-col items-center justify-center p-3 rounded-xl bg-yellow-600 hover:bg-yellow-700 text-white font-bold transition duration-150 transform hover:scale-105 active:scale-95 disabled:opacity-50 h-24">
+                                <span class="text-2xl">🥕</span>
+                                <span>Harvest</span>
+                            </button>
                         </div>
-                        <div class="mt-4 card bg-green-50 p-3 rounded-xl text-sm text-green-800 text-center">
-                            Inventory: <span id="seeds-display" class="font-medium">0</span> Seeds
-                        </div>
                     </section>
 
-                    <!-- Actions and Upgrades (Left 1/3 of desktop layout) -->
+                    <!-- Upgrades Section (Left 1/3 of desktop layout) -->
                     <div class="space-y-6">
-                        <!-- Actions Section -->
-                        <section class="mb-0">
-                            <h2 class="text-xl font-bold text-green-700 mb-3">Actions</h2>
-                            <div class="grid grid-cols-3 gap-3">
-                                <button id="plant-btn" onclick="plant()" class="flex flex-col items-center justify-center p-3 rounded-xl bg-lime-600 hover:bg-lime-700 text-white font-bold transition duration-150 transform hover:scale-105 active:scale-95 disabled:opacity-50 h-24">
-                                    <span class="text-2xl">➕</span>
-                                    <span>Plant (1 Seed)</span>
-                                </button>
-                                <button id="water-btn" onclick="water()" class="flex flex-col items-center justify-center p-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition duration-150 transform hover:scale-105 active:scale-95 disabled:opacity-50 h-24">
-                                    <span class="text-2xl">💧</span>
-                                    <span>Refill Water</span>
-                                </button>
-                                <button id="harvest-btn" onclick="harvest()" class="flex flex-col items-center justify-center p-3 rounded-xl bg-yellow-600 hover:bg-yellow-700 text-white font-bold transition duration-150 transform hover:scale-105 active:scale-95 disabled:opacity-50 h-24">
-                                    <span class="text-2xl">🥕</span>
-                                    <span>Harvest</span>
-                                </button>
-                            </div>
-                        </section>
-
                         <!-- Upgrades Section -->
                         <section class="mb-0">
                             <h2 class="text-xl font-bold text-green-700 mb-3">Upgrades</h2>
@@ -173,8 +168,19 @@
                             </div>
                         </section>
                     </div>
-
                 </div>
+
+                <!-- Row 3: Farm Plots Visual Section (Middle 1/3 of desktop layout) -->
+                <section class="mb-0">
+                    <h2 class="text-xl font-bold text-green-700 mb-3">Your Farm (<span id="plots-count-display">0</span>/<span id="plot-capacity-display-farm">0</span> plots)</h2>
+                    <!-- Scrollable container for the farm plots -->
+                    <div id="farm-plots-container" class="grid grid-cols-5 gap-2 p-3 bg-green-200 rounded-xl border-2 border-green-500 lg:h-96 overflow-y-auto">
+                        <!-- Plots dynamically generated here -->
+                    </div>
+                    <div class="mt-4 card bg-green-50 p-3 rounded-xl text-sm text-green-800 text-center">
+                        Inventory: <span id="seeds-display" class="font-medium">0</span> Seeds
+                    </div>
+                </section>
             </div>
 
             <!-- ========================================================================= -->
@@ -185,8 +191,8 @@
                 <!-- Game Log -->
                 <section class="flex-1 min-h-[10rem] max-h-[12rem] lg:max-h-none lg:flex-grow">
                     <h2 class="text-xl font-bold text-green-700 mb-3">Game Log</h2>
-                    <div id="log-container" class="card bg-gray-100 p-3 rounded-xl h-full overflow-y-auto text-sm space-y-1">
-                        <div class="text-gray-600">Game started. Initializing Firebase...</div>
+                    <div id="log-container" class="card bg-gray-100 p-3 rounded-xl h-full overflow-y-auto text-sm space-y-1 shadow-md border-2 border-gray-300">
+                        <div class="text-gray-600">Game started. Initializing persistence...</div>
                     </div>
                 </section>
 
@@ -209,6 +215,7 @@
         <!-- Floating Message Modal -->
         <div id="message-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center p-4 z-50 transition-opacity duration-300 opacity-0">
             <div class="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full text-center">
+                <!-- Modal content will be dynamically updated for simple message or confirmation -->
                 <p id="modal-text" class="text-lg font-semibold text-gray-800 mb-4"></p>
                 <button onclick="closeModal()" class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition">OK</button>
             </div>
@@ -217,7 +224,6 @@
 
     <script>
         // Setup a mock config for running locally outside the Canvas environment.
-        // YOU MUST REPLACE THESE VALUES WITH YOUR OWN FIREBASE PROJECT CONFIG!
         const MOCK_FIREBASE_CONFIG = {
             apiKey: "YOUR_API_KEY_HERE", 
             authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
@@ -227,8 +233,12 @@
             appId: "YOUR_APP_ID"
         };
 
+        // --- Persistence and State Variables ---
+        const LOCAL_STORAGE_KEY = 'harvestClicker_offlineSave';
+        let currentMode = 'local'; // 'local' or 'online'
+        let firestoreUnsubscribe = null;
+        
         // --- Firebase Configuration and Initialization ---
-        // Fallback for when global variables (__...) are missing (i.e., when running locally)
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : MOCK_FIREBASE_CONFIG;
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
@@ -251,9 +261,7 @@
         const GROWTH_TIME_SECONDS = 10;
         const WATER_REFILL_COST = 5;
         const MAX_PLOT_CAPACITY = 100;
-        
-        // UPDATED: Cooldown setting for username changes (24 hours = 86400 seconds)
-        const USERNAME_COOLDOWN_SECONDS = 86400; 
+        const USERNAME_COOLDOWN_SECONDS = 86400; // 24 hours
 
         // Set up game state defaults
         let gameState = {
@@ -266,7 +274,7 @@
             autoHarvestLevel: 0,
             lastPlayed: Date.now(),
             isReady: false,
-            lastUsernameChange: 0, // Timestamp of last successful change
+            lastUsernameChange: 0, 
         };
 
         const UPGRADES = {
@@ -306,30 +314,28 @@
             return Math.floor(up.baseCost * Math.pow(up.costMultiplier, currentLevel));
         }
         
-        // Returns the reference for the user's private game state document
+        // --- Firebase Document References ---
         function getGameDocRef() {
             if (!db || !userId) return null;
             return firebase.doc(db, 'artifacts', appId, 'users', userId, GAME_COLLECTION, GAME_DOC_ID);
         }
 
-        // Returns the reference for the user's private profile document
         function getProfileDocRef() {
             if (!db || !userId) return null;
             return firebase.doc(db, 'artifacts', appId, 'users', userId, USER_PROFILE_COLLECTION, USER_PROFILE_DOC_ID);
         }
 
-        // Returns the reference for the public chat collection
         function getChatCollectionRef() {
             if (!db) return null;
             return firebase.collection(db, 'artifacts', appId, 'public', 'data', CHAT_COLLECTION);
         }
         
-        // Returns the reference for the public unique usernames collection
         function getUsernamesCollectionRef() {
             if (!db) return null;
             return firebase.collection(db, 'artifacts', appId, 'public', 'data', USERNAMES_COLLECTION);
         }
 
+        // --- Core Utility Functions ---
         function log(message, type = 'info') {
             const logContainer = document.getElementById('log-container');
             const logEntry = document.createElement('div');
@@ -355,32 +361,6 @@
             }
         }
 
-        async function saveGame(state) {
-            const ref = getGameDocRef();
-            if (ref) {
-                try {
-                    const dataToSave = {
-                        ...state,
-                        plots: state.plots.map(p => ({
-                            id: p.id,
-                            plantedAt: p.plantedAt,
-                            isReady: p.isReady
-                        })),
-                        lastPlayed: firebase.Timestamp.now()
-                    };
-
-                    // Clean up properties not meant for persistence in game_state
-                    delete dataToSave.lastUsernameChange;
-                    delete dataToSave.isReady;
-
-
-                    await firebase.setDoc(ref, dataToSave);
-                } catch (e) {
-                    log(`Error saving game: ${e.message}`, 'error');
-                }
-            }
-        }
-
         function growPlots(state, now) {
             let maturedCount = 0;
             const maturityTime = GROWTH_TIME_SECONDS * 1000;
@@ -396,18 +376,21 @@
 
         function applyOfflineProgress(state) {
             const now = Date.now();
-            const lastTime = state.lastPlayed.toMillis ? state.lastPlayed.toMillis() : state.lastPlayed;
+            const lastTime = state.lastPlayed; 
             const timeDiffSeconds = Math.floor((now - lastTime) / 1000);
 
             if (timeDiffSeconds > 5) {
+                let harvestedFromAuto = 0;
+                let plantedByAuto = 0; 
+                
+                // 1. Process Growth
                 state.plots.forEach(plot => {
-                    const timeSincePlanted = now - plot.plantedAt;
-                    if (!plot.isReady && timeSincePlanted >= GROWTH_TIME_SECONDS * 1000) {
+                    if (!plot.isReady && (now - plot.plantedAt) >= GROWTH_TIME_SECONDS * 1000) {
                         plot.isReady = true;
                     }
                 });
-
-                let harvestedFromAuto = 0;
+                
+                // 2. Process Auto-Harvest
                 if (state.autoHarvestLevel > 0) {
                     const autoHarvestRate = 5; 
                     const potentialHarvests = Math.floor((timeDiffSeconds * state.autoHarvestLevel) / autoHarvestRate);
@@ -428,9 +411,22 @@
 
                 const moneyGained = harvestedFromAuto * (1.0 * state.harvestMultiplier);
                 state.money += moneyGained;
+                
+                // 3. Process Auto-Plant (less critical for offline since growth already happened, but for consistency)
+                if (state.autoPlantLevel > 0 && state.seeds > 0) {
+                    const autoPlantRate = 5;
+                    const potentialPlants = Math.floor((timeDiffSeconds * state.autoPlantLevel) / autoPlantRate);
+                    const availableSlots = state.plotCapacity - state.plots.length;
+                    plantedByAuto = Math.min(potentialPlants, availableSlots, state.seeds);
 
-                if (moneyGained > 0) {
-                    log(`While you were away: Gained $${moneyGained.toFixed(2)} from ${harvestedFromAuto} auto-harvests over ${timeDiffSeconds}s.`, 'success');
+                    for (let i = 0; i < plantedByAuto; i++) {
+                        state.seeds--;
+                        state.plots.push({ id: Math.random().toString(36).substring(2, 9), plantedAt: now, isReady: false });
+                    }
+                }
+
+                if (moneyGained > 0 || plantedByAuto > 0) {
+                    log(`While you were away for ${timeDiffSeconds}s: Gained $${moneyGained.toFixed(2)} from ${harvestedFromAuto} auto-harvests. Planted ${plantedByAuto} plots.`, 'success');
                 } else if (timeDiffSeconds > 60) {
                     log(`You were away for ${Math.floor(timeDiffSeconds / 60)} minutes. Check the log for any maturing plots!`);
                 }
@@ -438,32 +434,370 @@
             state.lastPlayed = now;
         }
 
+        // --- Save/Load Functions for Local Storage ---
+        function loadLocalGame() {
+            const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+            if (saved) {
+                try {
+                    let loadedState = JSON.parse(saved);
+                    // Ensure numbers are numbers and apply progress
+                    ['money', 'seeds', 'plotCapacity', 'harvestMultiplier', 'autoPlantLevel', 'autoHarvestLevel'].forEach(key => {
+                        loadedState[key] = parseFloat(loadedState[key] || 0);
+                    });
+                    
+                    if (!Array.isArray(loadedState.plots)) loadedState.plots = [];
+                    loadedState.plots.forEach(p => {
+                         // lastPlayed is already a number from JSON.parse
+                        p.plantedAt = p.plantedAt || Date.now();
+                        p.isReady = p.isReady || false;
+                    });
 
-        // --- Profile/Username Functions ---
+                    applyOfflineProgress(loadedState);
+                    log('Loaded game state from Local Storage.', 'success');
+                    return { ...gameState, ...loadedState, isReady: true };
+                } catch (e) {
+                    log(`Error parsing local save: ${e.message}. Starting new local game.`, 'error');
+                }
+            }
+            log('No local save found. Starting new game in Local Mode.');
+            return { ...gameState, isReady: true }; // Start with default settings
+        }
+
+        function saveLocalGame() {
+            try {
+                const dataToSave = { ...gameState };
+                dataToSave.plots = gameState.plots.map(p => ({
+                    id: p.id,
+                    plantedAt: p.plantedAt,
+                    isReady: p.isReady
+                }));
+                
+                // Remove transient states
+                delete dataToSave.lastUsernameChange;
+                delete dataToSave.isReady;
+                
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToSave));
+            } catch (e) {
+                log(`Error saving game to Local Storage: ${e.message}`, 'error');
+            }
+        }
+
+        // --- Save/Load Functions for Firestore ---
+        async function loadOnlineGame() {
+            const ref = getGameDocRef();
+            if (!ref) return null;
+            
+            try {
+                const docSnap = await firebase.getDoc(ref);
+                if (docSnap.exists()) {
+                    let loadedState = docSnap.data();
+                    
+                    // Convert Firestore Timestamps to JS numbers for consistency
+                    if (loadedState.plots) {
+                        loadedState.plots = loadedState.plots.map(p => ({
+                            id: p.id,
+                            plantedAt: p.plantedAt.toMillis ? p.plantedAt.toMillis() : p.plantedAt,
+                            isReady: p.isReady
+                        }));
+                    }
+                    if (loadedState.lastPlayed && loadedState.lastPlayed.toMillis) {
+                         loadedState.lastPlayed = loadedState.lastPlayed.toMillis();
+                    }
+
+                    // Apply types and progress
+                    ['money', 'seeds', 'plotCapacity', 'harvestMultiplier', 'autoPlantLevel', 'autoHarvestLevel'].forEach(key => {
+                        loadedState[key] = parseFloat(loadedState[key] || 0);
+                    });
+                    
+                    applyOfflineProgress(loadedState);
+                    log('Loaded game state from Cloud (one-time fetch).', 'success');
+                    return { ...gameState, ...loadedState, isReady: true };
+                }
+            } catch (e) {
+                log(`Error loading game from Cloud: ${e.message}`, 'error');
+            }
+            return null; // Indicates no cloud save found or error
+        }
+
+        async function saveGame(state) {
+            if (currentMode === 'local') {
+                saveLocalGame();
+            } else if (currentMode === 'online') {
+                const ref = getGameDocRef();
+                if (ref) {
+                    try {
+                        const dataToSave = {
+                            ...state,
+                            plots: state.plots.map(p => ({
+                                id: p.id,
+                                plantedAt: p.plantedAt,
+                                isReady: p.isReady
+                            })),
+                            lastPlayed: firebase.Timestamp.now()
+                        };
+
+                        // Clean up properties not meant for persistence
+                        delete dataToSave.lastUsernameChange;
+                        delete dataToSave.isReady;
+
+                        await firebase.setDoc(ref, dataToSave);
+                    } catch (e) {
+                        log(`Error saving game to Cloud: ${e.message}`, 'error');
+                    }
+                }
+            }
+        }
+
+        // --- Firebase Listener Management ---
+        function startOnlineListener() {
+            if (firestoreUnsubscribe) return; // Already listening
+
+            const ref = getGameDocRef();
+            if (!ref) return;
+
+            firestoreUnsubscribe = firebase.onSnapshot(ref, (docSnap) => {
+                if (currentMode !== 'online') return; 
+
+                let loadedState = null;
+                if (docSnap.exists()) {
+                    loadedState = docSnap.data();
+                }
+
+                if (loadedState) {
+                    // Merge loaded state, ensuring plots are correctly formatted
+                    gameState = { ...gameState, ...loadedState };
+
+                    if (!Array.isArray(gameState.plots)) gameState.plots = [];
+                    gameState.plots = gameState.plots.map(p => ({
+                        id: p.id || Math.random().toString(36).substring(2, 9),
+                        plantedAt: p.plantedAt.toMillis ? p.plantedAt.toMillis() : p.plantedAt,
+                        isReady: p.isReady
+                    }));
+                    
+                    if (gameState.lastPlayed && gameState.lastPlayed.toMillis) {
+                        gameState.lastPlayed = gameState.lastPlayed.toMillis();
+                    }
+
+                    ['money', 'seeds', 'plotCapacity', 'harvestMultiplier', 'autoPlantLevel', 'autoHarvestLevel'].forEach(key => {
+                        gameState[key] = parseFloat(gameState[key] || 0);
+                    });
+
+                    applyOfflineProgress(gameState);
+                    log('Cloud state synchronized.', 'info');
+
+                } else if (docSnap.exists === false) {
+                    // If cloud doc doesn't exist, create it from current state
+                    log('No Cloud save found for this user. Uploading current progress.', 'info');
+                    saveGame(gameState);
+                }
+                gameState.isReady = true;
+                renderGame();
+            }, (error) => {
+                log(`Error fetching game state: ${error.message}`, 'error');
+            });
+        }
+
+        function stopOnlineListener() {
+            if (firestoreUnsubscribe) {
+                firestoreUnsubscribe();
+                firestoreUnsubscribe = null;
+                log('Stopped Cloud synchronization listener.', 'info');
+            }
+        }
+
+        // --- Mode Switch Logic ---
+        window.handleModeSwitch = async function() {
+            const modeButton = document.getElementById('mode-switch-button');
+            const modeStatus = document.getElementById('mode-status-display');
+            modeButton.disabled = true;
+
+            if (!userId) {
+                showModal('You must be signed in to switch to Online Mode.');
+                modeButton.disabled = false;
+                return;
+            }
+            if (!gameState.isReady) {
+                showModal('Game state not yet loaded. Please wait a moment.');
+                modeButton.disabled = false;
+                return;
+            }
+            
+            // 1. Save current state before switching
+            saveGame(gameState);
+            
+            // Determine new mode
+            const newMode = currentMode === 'local' ? 'online' : 'local';
+
+            if (newMode === 'online') {
+                // Switching to ONLINE: Load Cloud save and prompt for conflict resolution
+                log('Switching to Online Mode...', 'tick');
+                const cloudState = await loadOnlineGame();
+                
+                if (cloudState) {
+                    // Conflict Resolution Prompt
+                    showModalConfirm(
+                        'Cloud Save Found!',
+                        'Do you want to load your Cloud progress, or keep your current Local progress and use it as your new Cloud save?',
+                        async () => { // Confirm: Load Cloud
+                            gameState = { ...gameState, ...cloudState };
+                            log('Loaded Cloud save and starting online sync.', 'success');
+                            currentMode = 'online';
+                            startOnlineListener();
+                            renderGame();
+                            modeButton.textContent = 'Mode: Online ☁️';
+                            modeStatus.textContent = 'Mode: Online Cloud Save';
+                        },
+                        async () => { // Cancel: Overwrite Cloud with Local
+                            log('Continuing with Local save and overwriting Cloud save.', 'info');
+                            currentMode = 'online';
+                            startOnlineListener(); 
+                            saveGame(gameState); // Force save of current state to cloud
+                            renderGame();
+                            modeButton.textContent = 'Mode: Online ☁️';
+                            modeStatus.textContent = 'Mode: Online Cloud Save';
+                        }
+                    );
+                } else {
+                    // No cloud save found, switch and save current state to cloud
+                    log('No Cloud save found. Switching to Online Mode and saving current progress.', 'info');
+                    currentMode = 'online';
+                    startOnlineListener();
+                    saveGame(gameState); 
+                    renderGame();
+                    modeButton.textContent = 'Mode: Online ☁️';
+                    modeStatus.textContent = 'Mode: Online Cloud Save';
+                }
+
+            } else {
+                // Switching to OFFLINE: Stop listener and prompt for conflict resolution
+                log('Switching to Local Mode...', 'tick');
+                stopOnlineListener();
+                
+                const localState = loadLocalGame();
+                
+                // Conflict Resolution Prompt
+                showModalConfirm(
+                    'Local Save Found!',
+                    'Do you want to load your Local progress, or continue with your current Cloud progress and save it locally?',
+                    async () => { // Confirm: Load Local
+                        gameState = { ...gameState, ...localState };
+                        log('Loaded Local save.', 'success');
+                        currentMode = 'local';
+                        renderGame();
+                        modeButton.textContent = 'Mode: Local 🏠';
+                        modeStatus.textContent = 'Mode: Local Browser Save';
+                    },
+                    async () => { // Cancel: Save Online to Local
+                        log('Continuing with Cloud save and saving it locally.', 'info');
+                        currentMode = 'local';
+                        saveGame(gameState); // Force save of current cloud state to local
+                        renderGame();
+                        modeButton.textContent = 'Mode: Local 🏠';
+                        modeStatus.textContent = 'Mode: Local Browser Save';
+                    }
+                );
+            }
+            modeButton.disabled = false;
+        }
+
+        // --- Modal/UI Helpers (Updated for Confirmation) ---
+        function showModal(message) {
+            const modal = document.getElementById('message-modal');
+            const contentDiv = modal.querySelector('.bg-white');
+            
+            // Restore simple OK button structure
+            contentDiv.innerHTML = `
+                <p id="modal-text" class="text-lg font-semibold text-gray-800 mb-4">${message}</p>
+                <button onclick="closeModal()" class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition">OK</button>
+            `;
+
+            modal.classList.remove('hidden', 'opacity-0');
+            modal.classList.add('flex', 'opacity-100');
+        }
+
+        let modalConfirmCallback = null;
+
+        function showModalConfirm(title, message, confirmCallback, cancelCallback) {
+            const modal = document.getElementById('message-modal');
+            const contentDiv = modal.querySelector('.bg-white');
+            
+            contentDiv.innerHTML = `
+                <p id="modal-text" class="text-lg font-semibold text-gray-800 mb-4">
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">${title}</h3>
+                    <p class="text-gray-700">${message}</p>
+                </p>
+            `;
+            
+            // Create custom button layout
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-3 mt-4';
+            
+            const confirmBtn = document.createElement('button');
+            confirmBtn.className = 'w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition font-semibold';
+            confirmBtn.textContent = 'Confirm Action';
+            confirmBtn.onclick = () => { confirmCallback(); closeModal(); };
+            
+            const cancelBtn = document.createElement('button');
+            cancelBtn.className = 'w-full bg-gray-300 text-gray-800 py-2 rounded-lg hover:bg-gray-400 transition font-semibold';
+            cancelBtn.textContent = 'Cancel';
+            cancelBtn.onclick = () => { cancelCallback(); closeModal(); };
+
+            buttonContainer.appendChild(confirmBtn);
+            buttonContainer.appendChild(cancelBtn);
+            contentDiv.appendChild(buttonContainer);
+
+            modal.classList.remove('hidden', 'opacity-0');
+            modal.classList.add('flex', 'opacity-100');
+        }
+
+        window.closeModal = function() {
+            const modal = document.getElementById('message-modal');
+            modal.classList.remove('flex', 'opacity-100');
+            modal.classList.add('hidden', 'opacity-0');
+            
+            // Restore the simple OK button structure for next non-confirm call
+            const contentDiv = modal.querySelector('.bg-white');
+            contentDiv.innerHTML = `
+                <p id="modal-text" class="text-lg font-semibold text-gray-800 mb-4"></p>
+                <button onclick="closeModal()" class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition">OK</button>
+            `;
+        }
+
+        // --- Profile/Username Functions (Modified to rely on currentMode) ---
         
+        // ... (fetchAndSetUsername, updateUsernameButtonState, updateUsername functions remain mostly the same, 
+        // they rely on the profile doc which is always in Firestore, but they must be disabled if no user is logged in)
+
         function updateUsernameButtonState() {
+            // ... (existing logic)
             const setUsernameBtn = document.getElementById('set-username-btn');
             const usernameStatus = document.getElementById('username-status');
             const now = Date.now();
             
-            if (gameState.lastUsernameChange === undefined) return; 
+            // Check if user is logged in
+            if (!userId) {
+                setUsernameBtn.disabled = true;
+                setUsernameBtn.textContent = 'Sign In to Set';
+                usernameStatus.innerHTML = `Your display name is: <span id="current-display-name">${displayUserId}</span>.`;
+                return;
+            }
 
+            // ... (rest of cooldown logic)
             const nextChangeTime = gameState.lastUsernameChange + (USERNAME_COOLDOWN_SECONDS * 1000);
             
             if (now < nextChangeTime) {
+                // ... (cooldown display logic)
                 const remainingSeconds = Math.ceil((nextChangeTime - now) / 1000);
                 let timeString = '';
-
-                // Logic updated to display D/H/M/S for 24h cooldown
-                if (remainingSeconds >= 3600) { // If remaining time is 1 hour or more
+                if (remainingSeconds >= 3600) { 
                     const hours = Math.floor(remainingSeconds / 3600);
                     const minutes = Math.floor((remainingSeconds % 3600) / 60);
                     timeString = `${hours}h ${minutes}m`;
-                } else if (remainingSeconds >= 60) { // If remaining time is less than an hour, show M/S
+                } else if (remainingSeconds >= 60) {
                     const minutes = Math.floor(remainingSeconds / 60);
                     const seconds = remainingSeconds % 60;
                     timeString = `${minutes}m ${seconds}s`;
-                } else { // If less than a minute, show seconds
+                } else {
                     timeString = `${remainingSeconds}s`;
                 }
 
@@ -484,9 +818,8 @@
             document.getElementById('current-display-name').textContent = displayUserId;
         }
 
-
         async function fetchAndSetUsername(defaultName) {
-            const ref = getProfileDocRef();
+             const ref = getProfileDocRef();
             let currentUsername = defaultName;
             let lastChangeTimestamp = 0; 
 
@@ -496,15 +829,10 @@
                     const data = docSnap.data();
                     if (data.username) {
                         currentUsername = data.username;
-                        log(`Loaded custom username: ${currentUsername}`, 'info');
-                    } else {
-                         log(`Using default display name: ${defaultName}`, 'info');
-                    }
+                    } 
                     if (data.lastUsernameChange && data.lastUsernameChange.toMillis) {
                         lastChangeTimestamp = data.lastUsernameChange.toMillis();
                     }
-                } else {
-                    log(`Using default display name: ${defaultName}`, 'info');
                 }
             } catch (e) {
                 log(`Error fetching profile: ${e.message}`, 'error');
@@ -513,11 +841,8 @@
             displayUserId = currentUsername;
             document.getElementById('user-id-display').textContent = displayUserId;
             
-            // Set the state and update the button UI
             gameState.lastUsernameChange = lastChangeTimestamp; 
             updateUsernameButtonState();
-
-            // Set input value only if it's not the default User:XXXX name
             document.getElementById('username-input').value = displayUserId.startsWith('User:') ? '' : displayUserId;
         }
 
@@ -526,13 +851,11 @@
             setUsernameBtn.disabled = true;
 
             if (!isAuthReady || !userId) {
-                showModal('Game not fully loaded. Please wait a moment.');
-                log('Authentication not ready when trying to set username.', 'error');
+                showModal('Please sign in to set your username.');
                 updateUsernameButtonState();
                 return;
             }
-
-            // COOLDOWN CHECK
+            
             const now = Date.now();
             const nextChangeTime = gameState.lastUsernameChange + (USERNAME_COOLDOWN_SECONDS * 1000);
 
@@ -540,13 +863,10 @@
                 const remainingSeconds = Math.ceil((nextChangeTime - now) / 1000);
                 const hours = Math.floor(remainingSeconds / 3600);
                 const minutes = Math.floor((remainingSeconds % 3600) / 60);
-                
                 showModal(`Username change is on cooldown! Try again in ${hours} hours and ${minutes} minutes.`);
-                log('Username change attempt blocked by cooldown.', 'error');
                 updateUsernameButtonState();
                 return; 
             }
-            // END COOLDOWN CHECK
 
             const usernameInput = document.getElementById('username-input');
             const requestedUsername = usernameInput.value.trim();
@@ -554,7 +874,6 @@
             const profileRef = getProfileDocRef();
             const currentDisplayName = displayUserId;
             
-            // 1. Client-side validation
             if (requestedUsername.length < 3 || requestedUsername.length > 20) {
                 showModal('Username must be between 3 and 20 characters long.');
                 updateUsernameButtonState();
@@ -572,56 +891,38 @@
             }
 
             try {
-                // 2. Use a transaction to atomically check and reserve the username
                 await firebase.runTransaction(db, async (transaction) => {
                     const usernameDocRef = firebase.doc(getUsernamesCollectionRef(), normalizedUsername);
                     const usernameDoc = await transaction.get(usernameDocRef);
                     
-                    log(`Transaction started: checking if ${normalizedUsername} is available.`, 'tick');
-
-                    if (usernameDoc.exists()) {
-                        if (usernameDoc.data().userId !== userId) {
-                            throw new Error('USERNAME_TAKEN'); 
-                        }
-                    } 
+                    if (usernameDoc.exists() && usernameDoc.data().userId !== userId) {
+                        throw new Error('USERNAME_TAKEN'); 
+                    }
                     
                     if (!currentDisplayName.startsWith('User:') && currentDisplayName.toLowerCase() !== normalizedUsername) {
                         const oldUsernameDocRef = firebase.doc(getUsernamesCollectionRef(), currentDisplayName.toLowerCase());
                         transaction.delete(oldUsernameDocRef);
-                        log(`Transaction: Released old username ${currentDisplayName.toLowerCase()}`, 'tick');
                     }
                     
-                    // Reserve the new username for this user.
                     transaction.set(usernameDocRef, { userId: userId, originalCasing: requestedUsername });
                     
-                    // UPDATE: Update the user's private profile document with the new name AND the cooldown timestamp.
                     transaction.set(profileRef, { 
                         username: requestedUsername,
                         lastUsernameChange: firebase.Timestamp.now()
                     });
-                    log(`Transaction: Reserved ${normalizedUsername} and updated profile with cooldown.`, 'tick');
-
                 });
 
-                // 3. Success (ran outside the transaction)
                 log(`Username successfully set to ${requestedUsername}.`, 'success');
-                
-                // Update local state and UI immediately
                 gameState.lastUsernameChange = now; 
                 await fetchAndSetUsername(requestedUsername); 
-                
                 showModal(`Success! Username updated to: ${requestedUsername}. Cooldown is now active for 24 hours.`);
 
             } catch (e) {
                 if (e.message === 'USERNAME_TAKEN') {
                     showModal(`The username "${requestedUsername}" is already taken by another user. Please choose a different one.`);
-                    log(`Failed to set username: ${requestedUsername} is taken.`, 'error');
-                } else if (e.message.includes('The transaction was aborted')) {
-                    showModal(`The attempt to set your username failed due to a database conflict or network error. Please try again.`);
-                    log(`Transaction aborted: ${e.message}`, 'error');
                 } else {
                     log(`Error saving username (transaction failed): ${e.message}`, 'error');
-                    showModal(`Failed to set username due to an unexpected error. Error: ${e.message}`);
+                    showModal(`Failed to set username due to an unexpected error.`);
                 }
             } finally {
                 updateUsernameButtonState();
@@ -629,236 +930,107 @@
         }
         // --- End Profile/Username Functions ---
 
-
-        // --- Chat Functions (Unchanged) ---
-        function setupChatListener() {
-            const chatRef = getChatCollectionRef();
-            if (!chatRef) {
-                log('Error: Chat collection reference missing.', 'error');
-                return;
-            }
-
-            const q = firebase.query(chatRef, firebase.orderBy('timestamp', 'desc'), firebase.limit(50));
-
-            firebase.onSnapshot(q, (snapshot) => {
-                const chatContainer = document.getElementById('chat-container');
-                chatContainer.innerHTML = ''; 
-
-                const messages = [];
-                snapshot.forEach(doc => {
-                    messages.push(doc.data());
-                });
-
-                messages.reverse();
-
-                messages.forEach(msg => {
-                    const msgElement = document.createElement('div');
-                    const isCurrentUser = msg.userId === userId; 
-                    
-                    const messageClass = isCurrentUser
-                        ? 'bg-green-300 self-end rounded-lg p-2 max-w-[80%]'
-                        : 'bg-white self-start rounded-lg p-2 max-w-[80%] border border-gray-200';
-
-                    const userDisplay = msg.displayUserId || 'Unknown';
-                    const userColor = isCurrentUser ? 'text-green-800' : 'text-gray-600';
-
-                    msgElement.className = `flex flex-col ${messageClass} shadow-sm`;
-                    msgElement.innerHTML = `
-                        <span class="text-xs font-bold ${userColor}">${userDisplay}</span>
-                        <span class="text-sm text-gray-900 break-words">${msg.message}</span>
-                    `;
-
-                    chatContainer.prepend(msgElement);
-                });
-                
-                if (messages.length === 0) {
-                    chatContainer.innerHTML = '<div class="text-gray-400 text-center text-sm">Welcome to the Global Chat!</div>';
-                }
-
-                if (chatContainer.scrollTop > -20) {
-                     chatContainer.scrollTop = chatContainer.scrollHeight * -1;
-                }
-
-            }, (error) => {
-                log(`Error listening to chat: ${error.message}`, 'error');
-            });
-        }
-
-        window.handleSendMessage = function() {
-            const input = document.getElementById('chat-input');
-            const message = input.value.trim();
-
-            if (!isAuthReady || !db || !userId) {
-                showModal('Chat is not ready. Please wait for the game to fully load.');
-                return;
-            }
-
-            if (message.length > 0) {
-                const chatRef = getChatCollectionRef();
-                if (chatRef) {
-                    firebase.addDoc(chatRef, {
-                        userId: userId,
-                        displayUserId: displayUserId, 
-                        message: message,
-                        timestamp: firebase.Timestamp.now()
-                    }).then(() => {
-                        input.value = '';
-                    }).catch(e => {
-                        log(`Error sending message: ${e.message}`, 'error');
-                    });
+        // --- Auth/Startup Functions ---
+        function updateAuthButton(user) {
+            const button = document.getElementById('auth-button');
+            if (user) {
+                if (user.isAnonymous) {
+                    button.textContent = "Sign in with Google";
+                    button.classList.remove('bg-red-500', 'hover:bg-red-600');
+                    button.classList.add('bg-blue-500', 'hover:bg-blue-600');
+                } else {
+                    button.textContent = "Sign Out";
+                    button.classList.remove('bg-blue-500', 'hover:bg-blue-600');
+                    button.classList.add('bg-red-500', 'hover:bg-red-600');
                 }
             } else {
-                showModal('Please enter a message before sending.');
+                 button.textContent = "Sign In/Up";
+                 button.classList.remove('bg-red-500', 'hover:bg-red-600');
+                 button.classList.add('bg-blue-500', 'hover:bg-blue-600');
             }
         }
 
-        document.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && document.getElementById('chat-input') === document.activeElement) {
-                handleSendMessage();
+        window.handleAuthAction = function() {
+            if (auth && auth.currentUser && !auth.currentUser.isAnonymous) {
+                firebase.signOut(auth);
+            } else {
+                signInWithGoogle();
             }
-        });
-        // --- End Chat Functions ---
+        }
 
-        // --- Auth Functions (Unchanged) ---
         window.signInWithGoogle = function() {
-            if (!auth) {
-                showModal('Firebase Auth not ready.');
-                return;
-            }
+            if (!auth) { showModal('Firebase Auth not ready.'); return; }
             const provider = new firebase.GoogleAuthProvider();
             firebase.signInWithPopup(auth, provider)
-                .then((result) => {
-                    log(`Successfully signed in with Google: ${result.user.displayName}`, 'success');
-                })
                 .catch((error) => {
                     log(`Google Sign-In failed: ${error.message}`, 'error');
                     showModal(`Google Sign-In Failed. Error: ${error.code}`);
                 });
         }
 
-        window.handleAuthAction = function() {
-            const button = document.getElementById('auth-button');
-            if (auth && auth.currentUser) {
-                if (!auth.currentUser.isAnonymous) {
-                    firebase.signOut(auth);
-                    log('User signed out.', 'info');
-                } else {
-                    signInWithGoogle();
-                }
-            }
-        }
-        // --- End Auth Functions ---
-
-
-        function setupFirestoreListener(user) {
-            userId = user.uid;
-            
-            const defaultDisplayName = user.displayName || (user.isAnonymous ? `User: ${userId.substring(0, 8)}` : `User: ${userId.substring(0, 8)}`);
-
-            // Fetch the custom username/profile and set cooldown state
-            fetchAndSetUsername(defaultDisplayName);
-
-            const button = document.getElementById('auth-button');
-            if (user.isAnonymous) {
-                button.textContent = "Sign in with Google";
-                button.classList.remove('bg-red-500', 'hover:bg-red-600');
-                button.classList.add('bg-blue-500', 'hover:bg-blue-600');
-            } else {
-                button.textContent = "Sign Out";
-                button.classList.remove('bg-blue-500', 'hover:bg-blue-600');
-                button.classList.add('bg-red-500', 'hover:bg-red-600');
-            }
-            
-            const ref = getGameDocRef();
-
-            if (ref) {
-                firebase.onSnapshot(ref, (docSnap) => {
-                    let loadedState = null;
-                    if (docSnap.exists()) {
-                        loadedState = docSnap.data();
-                        log(`Game state loaded for ${displayUserId}.`, 'success');
-                    }
-
-                    if (loadedState) {
-                        // Merge loaded state into gameState, keeping non-game state like lastUsernameChange
-                        gameState = { ...gameState, ...loadedState };
-
-                        if (!Array.isArray(gameState.plots)) gameState.plots = [];
-                        gameState.plots = gameState.plots.map(p => ({
-                            id: p.id || Math.random().toString(36).substring(2, 9),
-                            plantedAt: p.plantedAt.toMillis ? p.plantedAt.toMillis() : p.plantedAt,
-                            isReady: p.isReady
-                        }));
-
-                        ['money', 'seeds', 'plotCapacity', 'harvestMultiplier', 'autoPlantLevel', 'autoHarvestLevel'].forEach(key => {
-                            gameState[key] = parseFloat(gameState[key] || 0);
-                        });
-
-                        applyOfflineProgress(gameState);
-
-                    } else {
-                        log('No existing game found for this user. Starting new game.');
-                        saveGame(gameState);
-                    }
-
-                    gameState.isReady = true;
-                    renderGame();
-                    setupChatListener(); 
-                }, (error) => {
-                    log(`Error fetching game state: ${error.message}`, 'error');
-                });
-            }
-        }
-
         function initializeFirebase() {
-            // Check if firebaseConfig is valid before proceeding
             if (!firebaseConfig || !firebaseConfig.projectId || firebaseConfig.projectId.includes("YOUR_PROJECT_ID")) {
-                log('Firebase config is missing or using placeholders. Cannot connect to database.', 'error');
-                // Don't throw an error, just stop initialization
+                log('Firebase config is missing. Game will be local-only.', 'error');
+                gameState = loadLocalGame();
+                renderGame();
                 return;
             }
 
             try {
-                // firebase.setLogLevel('Debug'); // Uncomment this if you need to see deep Firestore logs
                 const app = firebase.initializeApp(firebaseConfig);
                 db = firebase.getFirestore(app);
                 auth = firebase.getAuth(app);
 
                 firebase.onAuthStateChanged(auth, async (user) => {
                     if (user) {
+                        userId = user.uid;
                         isAuthReady = true;
-                        setupFirestoreListener(user);
-                    } else {
-                        try {
-                            if (initialAuthToken) {
-                                await firebase.signInWithCustomToken(auth, initialAuthToken);
-                            } else {
-                                await firebase.signInAnonymously(auth);
-                            }
-                        } catch (e) {
-                            log(`Authentication failed: ${e.message}. Game will be read-only until manual sign-in.`, 'error');
+                        
+                        const defaultDisplayName = user.displayName || (user.isAnonymous ? `User: ${userId.substring(0, 8)}` : `User: ${userId.substring(0, 8)}`);
+                        fetchAndSetUsername(defaultDisplayName);
+                        updateAuthButton(user);
+
+                        // If user signs in non-anonymously, automatically attempt to switch to online mode
+                        if (!user.isAnonymous) {
+                            log('Full account signed in. Starting check for Cloud Save.', 'info');
+                            handleModeSwitch(); // This handles save conflict and mode switch
+                        } else {
+                            // Anonymous or initial load with token: stay local, load local save
+                            log('Signed in anonymously/via token. Defaulting to Local Mode. Use switch to sync Cloud Save.', 'info');
+                            gameState = loadLocalGame();
+                            gameState.isReady = true;
+                            renderGame();
                         }
+                        setupChatListener(); 
+
+                    } else {
+                        // User signed out
+                        isAuthReady = true;
+                        stopOnlineListener();
+                        userId = null; 
+                        
+                        gameState = loadLocalGame();
+                        gameState.isReady = true;
+                        renderGame();
+                        updateAuthButton(user);
+                        
+                        currentMode = 'local';
+                        document.getElementById('mode-switch-button').textContent = 'Mode: Local 🏠';
+                        document.getElementById('mode-status-display').textContent = 'Mode: Local Browser Save';
+                        log('Signed out. Switched to Local Mode (offline save).', 'info');
                     }
+                    updateUsernameButtonState(); // Update username UI based on userId presence
                 });
             } catch (e) {
                 log(`Firebase initialization error: ${e.message}`, 'error');
+                gameState = loadLocalGame();
+                renderGame();
             }
         }
+        // --- End Auth/Startup Functions ---
 
-        // --- Game Logic (Unchanged) ---
-        function showModal(message) {
-            const modal = document.getElementById('message-modal');
-            document.getElementById('modal-text').textContent = message;
-            modal.classList.remove('hidden', 'opacity-0');
-            modal.classList.add('flex', 'opacity-100');
-        }
-
-        window.closeModal = function() {
-            const modal = document.getElementById('message-modal');
-            modal.classList.remove('flex', 'opacity-100');
-            modal.classList.add('hidden', 'opacity-0');
-        }
-
+        // --- Game Logic (Modified to call generic saveGame) ---
+        
         window.plant = function() {
             if (!gameState.isReady) return;
             if (gameState.seeds >= 1 && gameState.plots.length < gameState.plotCapacity) {
@@ -929,6 +1101,8 @@
         }
 
         // --- Render and Game Tick ---
+        function renderUpgrades() { /* ... (same as before) ... */ }
+        function renderFarmPlots() { /* ... (same as before) ... */ }
 
         function renderUpgrades() {
             const container = document.getElementById('upgrades-container');
@@ -952,7 +1126,6 @@
                 if (key === 'harvest_multi') {
                     tierDisplay = ` (Current Yield: x${gameState.harvestMultiplier.toFixed(1)})`;
                 }
-
 
                 const cardHtml = `
                     <div class="card bg-white p-4 rounded-xl flex justify-between items-center shadow-md">
@@ -1019,6 +1192,7 @@
             renderFarmPlots();
         }
 
+
         let autoPlantTimer = 0;
         let autoHarvestTimer = 0;
 
@@ -1028,14 +1202,14 @@
             const now = Date.now();
             let actionTaken = false;
 
+            // 1. Plot Growth Check (Always run)
             const maturedCount = growPlots(gameState, now);
-            if (maturedCount > 0) {
-                actionTaken = true;
-            }
+            if (maturedCount > 0) { actionTaken = true; }
             
-            // Update username button state every tick to show accurate cooldown time
+            // 2. Update UI elements that rely on timers/cooldowns
             updateUsernameButtonState();
-
+            
+            // 3. Auto Upgrades Check
             autoPlantTimer++;
             autoHarvestTimer++;
 
@@ -1069,11 +1243,86 @@
                 autoHarvestTimer = 0;
             }
 
-            if (actionTaken) {
+            // 4. Save state if any automated action occurred (only for Local mode, Online sync is handled by listener/saveGame action)
+            if (actionTaken && currentMode === 'local') {
                 saveGame(gameState);
             }
             renderGame();
         }
+
+
+        // --- Chat Functions (Unchanged) ---
+        function setupChatListener() {
+            const chatRef = getChatCollectionRef();
+            if (!chatRef) { log('Error: Chat collection reference missing.', 'error'); return; }
+
+            const q = firebase.query(chatRef, firebase.orderBy('timestamp', 'desc'), firebase.limit(50));
+
+            firebase.onSnapshot(q, (snapshot) => {
+                const chatContainer = document.getElementById('chat-container');
+                chatContainer.innerHTML = ''; 
+
+                const messages = [];
+                snapshot.forEach(doc => { messages.push(doc.data()); });
+                messages.reverse();
+
+                messages.forEach(msg => {
+                    const msgElement = document.createElement('div');
+                    const isCurrentUser = msg.userId === userId; 
+                    const messageClass = isCurrentUser ? 'bg-green-300 self-end rounded-lg p-2 max-w-[80%]' : 'bg-white self-start rounded-lg p-2 max-w-[80%] border border-gray-200';
+                    const userDisplay = msg.displayUserId || 'Unknown';
+                    const userColor = isCurrentUser ? 'text-green-800' : 'text-gray-600';
+
+                    msgElement.className = `flex flex-col ${messageClass} shadow-sm`;
+                    msgElement.innerHTML = `
+                        <span class="text-xs font-bold ${userColor}">${userDisplay}</span>
+                        <span class="text-sm text-gray-900 break-words">${msg.message}</span>
+                    `;
+                    chatContainer.prepend(msgElement);
+                });
+                
+                if (messages.length === 0) {
+                    chatContainer.innerHTML = '<div class="text-gray-400 text-center text-sm">Welcome to the Global Chat!</div>';
+                }
+            }, (error) => {
+                log(`Error listening to chat: ${error.message}`, 'error');
+            });
+        }
+
+        window.handleSendMessage = function() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+
+            if (!isAuthReady || !db || !userId) {
+                showModal('Chat is not ready. Please wait for the game to fully load.');
+                return;
+            }
+
+            if (message.length > 0) {
+                const chatRef = getChatCollectionRef();
+                if (chatRef) {
+                    firebase.addDoc(chatRef, {
+                        userId: userId,
+                        displayUserId: displayUserId, 
+                        message: message,
+                        timestamp: firebase.Timestamp.now()
+                    }).then(() => {
+                        input.value = '';
+                    }).catch(e => {
+                        log(`Error sending message: ${e.message}`, 'error');
+                    });
+                }
+            } else {
+                showModal('Please enter a message before sending.');
+            }
+        }
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && document.getElementById('chat-input') === document.activeElement) {
+                handleSendMessage();
+            }
+        });
+        // --- End Chat Functions ---
+
 
         // Initialize the game
         window.onload = function() {
