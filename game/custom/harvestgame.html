@@ -201,13 +201,15 @@
         const GAME_DOC_ID = 'farm_clicker_v5'; 
         const USER_PROFILE_COLLECTION = 'user_profile';
         const USER_PROFILE_DOC_ID = 'data';
-        // NEW: Public collection to track unique usernames
         const USERNAMES_COLLECTION = 'usernames_map'; 
 
         // Game Constants
         const GROWTH_TIME_SECONDS = 10;
         const WATER_REFILL_COST = 5;
         const MAX_PLOT_CAPACITY = 100;
+        
+        // UPDATED: Cooldown setting for username changes (24 hours = 86400 seconds)
+        const USERNAME_COOLDOWN_SECONDS = 86400; 
 
         // Set up game state defaults
         let gameState = {
@@ -220,6 +222,7 @@
             autoHarvestLevel: 0,
             lastPlayed: Date.now(),
             isReady: false,
+            lastUsernameChange: 0, // Timestamp of last successful change
         };
 
         const UPGRADES = {
@@ -277,7 +280,7 @@
             return firebase.collection(db, 'artifacts', appId, 'public', 'data', CHAT_COLLECTION);
         }
         
-        // NEW: Returns the reference for the public unique usernames collection
+        // Returns the reference for the public unique usernames collection
         function getUsernamesCollectionRef() {
             if (!db) return null;
             return firebase.collection(db, 'artifacts', appId, 'public', 'data', USERNAMES_COLLECTION);
@@ -321,6 +324,11 @@
                         })),
                         lastPlayed: firebase.Timestamp.now()
                     };
+
+                    // Clean up properties not meant for persistence in game_state
+                    delete dataToSave.lastUsernameChange;
+                    delete dataToSave.isReady;
+
 
                     await firebase.setDoc(ref, dataToSave);
                 } catch (e) {
@@ -388,16 +396,69 @@
 
 
         // --- Profile/Username Functions ---
+        
+        function updateUsernameButtonState() {
+            const setUsernameBtn = document.getElementById('set-username-btn');
+            const usernameStatus = document.getElementById('username-status');
+            const now = Date.now();
+            
+            if (gameState.lastUsernameChange === undefined) return; 
+
+            const nextChangeTime = gameState.lastUsernameChange + (USERNAME_COOLDOWN_SECONDS * 1000);
+            
+            if (now < nextChangeTime) {
+                const remainingSeconds = Math.ceil((nextChangeTime - now) / 1000);
+                let timeString = '';
+
+                // Logic updated to display D/H/M/S for 24h cooldown
+                if (remainingSeconds >= 3600) { // If remaining time is 1 hour or more
+                    const hours = Math.floor(remainingSeconds / 3600);
+                    const minutes = Math.floor((remainingSeconds % 3600) / 60);
+                    timeString = `${hours}h ${minutes}m`;
+                } else if (remainingSeconds >= 60) { // If remaining time is less than an hour, show M/S
+                    const minutes = Math.floor(remainingSeconds / 60);
+                    const seconds = remainingSeconds % 60;
+                    timeString = `${minutes}m ${seconds}s`;
+                } else { // If less than a minute, show seconds
+                    timeString = `${remainingSeconds}s`;
+                }
+
+                setUsernameBtn.disabled = true;
+                setUsernameBtn.textContent = `Cooldown (${timeString})`;
+                
+                usernameStatus.innerHTML = `Your current display name is: <span id="current-display-name">${displayUserId}</span>. Change is on cooldown.`;
+                setUsernameBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                setUsernameBtn.classList.add('bg-gray-500', 'cursor-not-allowed');
+
+            } else {
+                setUsernameBtn.disabled = false;
+                setUsernameBtn.textContent = 'Set Username';
+                usernameStatus.innerHTML = `Your current display name is: <span id="current-display-name">${displayUserId}</span>.`;
+                setUsernameBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+                setUsernameBtn.classList.remove('bg-gray-500', 'cursor-not-allowed');
+            }
+            document.getElementById('current-display-name').textContent = displayUserId;
+        }
+
 
         async function fetchAndSetUsername(defaultName) {
             const ref = getProfileDocRef();
             let currentUsername = defaultName;
+            let lastChangeTimestamp = 0; 
 
             try {
                 const docSnap = await firebase.getDoc(ref);
-                if (docSnap.exists() && docSnap.data().username) {
-                    currentUsername = docSnap.data().username;
-                    log(`Loaded custom username: ${currentUsername}`, 'info');
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data.username) {
+                        currentUsername = data.username;
+                        log(`Loaded custom username: ${currentUsername}`, 'info');
+                    } else {
+                         log(`Using default display name: ${defaultName}`, 'info');
+                    }
+                    if (data.lastUsernameChange && data.lastUsernameChange.toMillis) {
+                        lastChangeTimestamp = data.lastUsernameChange.toMillis();
+                    }
                 } else {
                     log(`Using default display name: ${defaultName}`, 'info');
                 }
@@ -407,8 +468,11 @@
             
             displayUserId = currentUsername;
             document.getElementById('user-id-display').textContent = displayUserId;
-            document.getElementById('current-display-name').textContent = displayUserId;
             
+            // Set the state and update the button UI
+            gameState.lastUsernameChange = lastChangeTimestamp; 
+            updateUsernameButtonState();
+
             // Set input value only if it's not the default User:XXXX name
             document.getElementById('username-input').value = displayUserId.startsWith('User:') ? '' : displayUserId;
         }
@@ -420,9 +484,25 @@
             if (!isAuthReady || !userId) {
                 showModal('Game not fully loaded. Please wait a moment.');
                 log('Authentication not ready when trying to set username.', 'error');
-                setUsernameBtn.disabled = false;
+                updateUsernameButtonState();
                 return;
             }
+
+            // COOLDOWN CHECK
+            const now = Date.now();
+            const nextChangeTime = gameState.lastUsernameChange + (USERNAME_COOLDOWN_SECONDS * 1000);
+
+            if (now < nextChangeTime) {
+                const remainingSeconds = Math.ceil((nextChangeTime - now) / 1000);
+                const hours = Math.floor(remainingSeconds / 3600);
+                const minutes = Math.floor((remainingSeconds % 3600) / 60);
+                
+                showModal(`Username change is on cooldown! Try again in ${hours} hours and ${minutes} minutes.`);
+                log('Username change attempt blocked by cooldown.', 'error');
+                updateUsernameButtonState();
+                return; 
+            }
+            // END COOLDOWN CHECK
 
             const usernameInput = document.getElementById('username-input');
             const requestedUsername = usernameInput.value.trim();
@@ -433,17 +513,17 @@
             // 1. Client-side validation
             if (requestedUsername.length < 3 || requestedUsername.length > 20) {
                 showModal('Username must be between 3 and 20 characters long.');
-                setUsernameBtn.disabled = false;
+                updateUsernameButtonState();
                 return;
             }
             if (!/^[a-zA-Z0-9 _]+$/.test(requestedUsername)) {
                 showModal('Username can only contain letters, numbers, spaces, and underscores.');
-                setUsernameBtn.disabled = false;
+                updateUsernameButtonState();
                 return;
             }
             if (currentDisplayName === requestedUsername) {
                 showModal('Your display name is already set to that value.');
-                setUsernameBtn.disabled = false;
+                updateUsernameButtonState();
                 return;
             }
 
@@ -456,15 +536,11 @@
                     log(`Transaction started: checking if ${normalizedUsername} is available.`, 'tick');
 
                     if (usernameDoc.exists()) {
-                        // Check if the name is owned by a different user
                         if (usernameDoc.data().userId !== userId) {
                             throw new Error('USERNAME_TAKEN'); 
                         }
-                        // If it exists and is owned by the current user, we continue (no old name cleanup needed).
                     } 
                     
-                    // If the user is changing their name from an old name, we need to release the old name.
-                    // This logic only runs if the current display name is *not* a default User:xxxx ID
                     if (!currentDisplayName.startsWith('User:') && currentDisplayName.toLowerCase() !== normalizedUsername) {
                         const oldUsernameDocRef = firebase.doc(getUsernamesCollectionRef(), currentDisplayName.toLowerCase());
                         transaction.delete(oldUsernameDocRef);
@@ -474,26 +550,29 @@
                     // Reserve the new username for this user.
                     transaction.set(usernameDocRef, { userId: userId, originalCasing: requestedUsername });
                     
-                    // Update the user's private profile document.
-                    transaction.set(profileRef, { username: requestedUsername });
-                    log(`Transaction: Reserved ${normalizedUsername} and updated profile.`, 'tick');
+                    // UPDATE: Update the user's private profile document with the new name AND the cooldown timestamp.
+                    transaction.set(profileRef, { 
+                        username: requestedUsername,
+                        lastUsernameChange: firebase.Timestamp.now()
+                    });
+                    log(`Transaction: Reserved ${normalizedUsername} and updated profile with cooldown.`, 'tick');
 
                 });
 
                 // 3. Success (ran outside the transaction)
                 log(`Username successfully set to ${requestedUsername}.`, 'success');
                 
-                // Fetch and set the new username to update displayUserId globally
+                // Update local state and UI immediately
+                gameState.lastUsernameChange = now; 
                 await fetchAndSetUsername(requestedUsername); 
                 
-                showModal(`Success! Username updated to: ${requestedUsername}`);
+                showModal(`Success! Username updated to: ${requestedUsername}. Cooldown is now active for 24 hours.`);
 
             } catch (e) {
                 if (e.message === 'USERNAME_TAKEN') {
                     showModal(`The username "${requestedUsername}" is already taken by another user. Please choose a different one.`);
                     log(`Failed to set username: ${requestedUsername} is taken.`, 'error');
                 } else if (e.message.includes('The transaction was aborted')) {
-                    // Generic Firebase error (often network or retry limits)
                     showModal(`The attempt to set your username failed due to a database conflict or network error. Please try again.`);
                     log(`Transaction aborted: ${e.message}`, 'error');
                 } else {
@@ -501,13 +580,13 @@
                     showModal(`Failed to set username due to an unexpected error. Error: ${e.message}`);
                 }
             } finally {
-                setUsernameBtn.disabled = false;
+                updateUsernameButtonState();
             }
         }
         // --- End Profile/Username Functions ---
 
 
-        // --- Chat Functions ---
+        // --- Chat Functions (Unchanged) ---
         function setupChatListener() {
             const chatRef = getChatCollectionRef();
             if (!chatRef) {
@@ -575,7 +654,7 @@
                 if (chatRef) {
                     firebase.addDoc(chatRef, {
                         userId: userId,
-                        displayUserId: displayUserId, // Use the current custom/default display name
+                        displayUserId: displayUserId, 
                         message: message,
                         timestamp: firebase.Timestamp.now()
                     }).then(() => {
@@ -596,7 +675,7 @@
         });
         // --- End Chat Functions ---
 
-        // --- Auth Functions (Same as before) ---
+        // --- Auth Functions (Unchanged) ---
         window.signInWithGoogle = function() {
             if (!auth) {
                 showModal('Firebase Auth not ready.');
@@ -630,10 +709,9 @@
         function setupFirestoreListener(user) {
             userId = user.uid;
             
-            // Determine the default display name (Google Name > Anonymous ID)
             const defaultDisplayName = user.displayName || (user.isAnonymous ? `User: ${userId.substring(0, 8)}` : `User: ${userId.substring(0, 8)}`);
 
-            // Fetch the custom username from the profile document
+            // Fetch the custom username/profile and set cooldown state
             fetchAndSetUsername(defaultDisplayName);
 
             const button = document.getElementById('auth-button');
@@ -658,6 +736,7 @@
                     }
 
                     if (loadedState) {
+                        // Merge loaded state into gameState, keeping non-game state like lastUsernameChange
                         gameState = { ...gameState, ...loadedState };
 
                         if (!Array.isArray(gameState.plots)) gameState.plots = [];
@@ -720,7 +799,7 @@
             }
         }
 
-        // --- Game Logic (Same as before) ---
+        // --- Game Logic (Unchanged) ---
         function showModal(message) {
             const modal = document.getElementById('message-modal');
             document.getElementById('modal-text').textContent = message;
@@ -803,7 +882,7 @@
             renderGame();
         }
 
-        // --- Render and Game Tick (Same as before) ---
+        // --- Render and Game Tick ---
 
         function renderUpgrades() {
             const container = document.getElementById('upgrades-container');
@@ -907,6 +986,9 @@
             if (maturedCount > 0) {
                 actionTaken = true;
             }
+            
+            // Update username button state every tick to show accurate cooldown time
+            updateUsernameButtonState();
 
             autoPlantTimer++;
             autoHarvestTimer++;
