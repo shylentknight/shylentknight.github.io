@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harvest Clicker (Visual Plots)</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- Load Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot, Timestamp, collection, query, orderBy, addDoc, limit, getDoc, runTransaction, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global variable assignments (needed for the script block below)
+        window.firebase = {
+            initializeApp,
+            getAuth,
+            signInAnonymously,
+            signInWithCustomToken,
+            onAuthStateChanged,
+            signOut,
+            getFirestore,
+            doc,
+            setDoc,
+            onSnapshot,
+            setLogLevel,
+            Timestamp,
+            collection,
+            query,
+            orderBy,
+            addDoc,
+            limit,
+            getDoc,
+            runTransaction, 
+            updateDoc,
+            GoogleAuthProvider,
+            signInWithPopup,
+            deleteDoc // Added for cleanup
+        };
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7fee7; /* Light green background */
+        }
+        .card {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        /* Custom scrollbar for game log */
+        #log-container::-webkit-scrollbar,
+        #chat-container::-webkit-scrollbar {
+            width: 4px;
+        }
+        #log-container::-webkit-scrollbar-thumb,
+        #chat-container::-webkit-scrollbar-thumb {
+            background-color: #d1d5db; /* gray-300 */
+            border-radius: 2px;
+        }
+        .farm-plot {
+            /* 5-column grid means 20% width */
+            @apply flex items-center justify-center text-3xl font-bold rounded-lg border-2 border-dashed border-gray-300 relative overflow-hidden;
+            aspect-ratio: 1 / 1; /* Makes plots square */
+        }
+        .farm-plot.empty {
+            @apply bg-gray-100 text-gray-400 border-gray-200;
+        }
+        .farm-plot.growing {
+            @apply bg-lime-100 text-lime-700 border-lime-400;
+        }
+        .farm-plot.ready {
+            @apply bg-yellow-100 text-yellow-700 border-yellow-400;
+        }
+        .plot-timer {
+            @apply absolute bottom-1 right-1 text-xs font-semibold px-1 rounded bg-black bg-opacity-30 text-white;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8 flex justify-center min-h-screen">
+
+    <div id="app" class="w-full max-w-lg">
+        <header class="text-center mb-6">
+            <h1 class="text-4xl font-extrabold text-green-700 tracking-tight">Harvest Clicker 🚜</h1>
+            <p class="text-sm text-green-500 mt-1">Sow, wait, and automate.</p>
+        </header>
+
+        <!-- Money Display & Auth Status/Action -->
+        <div class="card bg-yellow-100 p-4 rounded-xl mb-6 flex justify-between items-center shadow-lg border-2 border-yellow-500">
+            <span class="text-2xl font-bold text-yellow-800 flex items-center">
+                💰 Money: <span id="money-display" class="ml-2">0</span>
+            </span>
+            <div class="text-sm text-right">
+                <!-- Displays User ID or Google Name -->
+                <div class="text-xs text-gray-500 mb-1" id="user-id-display">Loading User...</div>
+                <!-- Button for Sign In (Google) or Sign Out -->
+                <button id="auth-button" onclick="handleAuthAction()" class="px-3 py-1 text-xs font-semibold rounded-lg transition bg-blue-500 hover:bg-blue-600 text-white">
+                    Loading...
+                </button>
+            </div>
+        </div>
+        
+        <!-- User Profile/Username Section -->
+        <section class="mb-6">
+            <h2 class="text-xl font-bold text-green-700 mb-3">User Profile</h2>
+            <div class="flex card bg-white p-4 rounded-xl shadow-md border-2 border-gray-300">
+                <input type="text" id="username-input" placeholder="Enter your unique username" class="flex-grow p-2 border border-gray-300 rounded-l-lg focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100" maxlength="20">
+                <button id="set-username-btn" onclick="updateUsername()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-r-lg transition disabled:bg-gray-400">Set Username</button>
+            </div>
+            <p id="username-status" class="text-xs mt-2 text-gray-500 text-center">Your current display name is: <span id="current-display-name">Loading...</span></p>
+        </section>
+
+
+        <!-- Farm Plots Visual Section -->
+        <section class="mb-6">
+            <h2 class="text-xl font-bold text-green-700 mb-3">Your Farm (<span id="plots-count-display">0</span>/<span id="plot-capacity-display-farm">0</span> plots)</h2>
+            <!-- Scrollable container for the farm plots -->
+            <div id="farm-plots-container" class="grid grid-cols-5 gap-2 p-3 bg-green-200 rounded-xl border-2 border-green-500 max-h-64 overflow-y-auto">
+                <!-- Plots dynamically generated here -->
+            </div>
+        </section>
+
+        <!-- Actions Section -->
+        <section class="mb-6">
+            <h2 class="text-xl font-bold text-green-700 mb-3">Actions</h2>
+            <div class="grid grid-cols-3 gap-3">
+                <button id="plant-btn" onclick="plant()" class="flex flex-col items-center justify-center p-3 rounded-xl bg-lime-600 hover:bg-lime-700 text-white font-bold transition duration-150 transform hover:scale-105 active:scale-95 disabled:opacity-50 h-24">
+                    <span class="text-2xl">➕</span>
+                    <span>Plant (1 Seed)</span>
+                </button>
+                <button id="water-btn" onclick="water()" class="flex flex-col items-center justify-center p-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition duration-150 transform hover:scale-105 active:scale-95 disabled:opacity-50 h-24">
+                    <span class="text-2xl">💧</span>
+                    <span>Refill Water</span>
+                </button>
+                <button id="harvest-btn" onclick="harvest()" class="flex flex-col items-center justify-center p-3 rounded-xl bg-yellow-600 hover:bg-yellow-700 text-white font-bold transition duration-150 transform hover:scale-105 active:scale-95 disabled:opacity-50 h-24">
+                    <span class="text-2xl">🥕</span>
+                    <span>Harvest</span>
+                </button>
+            </div>
+            <div class="mt-4 card bg-green-50 p-3 rounded-xl text-sm text-green-800 text-center">
+                Inventory: <span id="seeds-display" class="font-medium">0</span> Seeds
+            </div>
+        </section>
+
+        <!-- Upgrades Section -->
+        <section class="mb-6">
+            <h2 class="text-xl font-bold text-green-700 mb-3">Upgrades</h2>
+            <div id="upgrades-container" class="space-y-3">
+                <!-- Upgrades dynamically generated here -->
+            </div>
+        </section>
+
+        <!-- Game Log -->
+        <section>
+            <h2 class="text-xl font-bold text-green-700 mb-3">Game Log</h2>
+            <div id="log-container" class="card bg-gray-100 p-3 rounded-xl h-40 overflow-y-auto text-sm space-y-1">
+                <div class="text-gray-600">Game started. Initializing Firebase...</div>
+            </div>
+        </section>
+
+        <!-- Chat Section -->
+        <section class="mt-6">
+            <h2 class="text-xl font-bold text-green-700 mb-3">Global Farm Chat 💬</h2>
+            <div id="chat-container" class="card bg-gray-100 p-3 rounded-xl h-64 overflow-y-auto flex flex-col-reverse shadow-md border-2 border-gray-300">
+                <!-- Messages will be prepended here -->
+                <div class="text-gray-400 text-center text-sm">Welcome to the Global Chat!</div>
+            </div>
+            <div class="flex mt-3">
+                <input type="text" id="chat-input" placeholder="Type a message..." class="flex-grow p-2 border border-gray-300 rounded-l-xl focus:ring-green-500 focus:border-green-500">
+                <button onclick="handleSendMessage()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-r-xl transition">Send</button>
+            </div>
+        </section>
+
+
+        <!-- Floating Message Modal -->
+        <div id="message-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center p-4 z-50 transition-opacity duration-300 opacity-0">
+            <div class="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full text-center">
+                <p id="modal-text" class="text-lg font-semibold text-gray-800 mb-4"></p>
+                <button onclick="closeModal()" class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Firebase Configuration and Initialization ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let db;
+        let auth;
+        let userId = '';
+        let displayUserId = ''; 
+        let isAuthReady = false;
+        
+        // Firestore constants
+        const GAME_COLLECTION = 'game_state';
+        const CHAT_COLLECTION = 'chat_messages';
+        const GAME_DOC_ID = 'farm_clicker_v5'; 
+        const USER_PROFILE_COLLECTION = 'user_profile';
+        const USER_PROFILE_DOC_ID = 'data';
+        // NEW: Public collection to track unique usernames
+        const USERNAMES_COLLECTION = 'usernames_map'; 
+
+        // Game Constants
+        const GROWTH_TIME_SECONDS = 10;
+        const WATER_REFILL_COST = 5;
+        const MAX_PLOT_CAPACITY = 100;
+
+        // Set up game state defaults
+        let gameState = {
+            money: 10.00,
+            seeds: 5,
+            plots: [],
+            plotCapacity: 1, 
+            harvestMultiplier: 1.0,
+            autoPlantLevel: 0,
+            autoHarvestLevel: 0,
+            lastPlayed: Date.now(),
+            isReady: false,
+        };
+
+        const UPGRADES = {
+            plot_cap: {
+                name: "Expand Farmland",
+                baseCost: 20,
+                costMultiplier: 1.5,
+                effect: "Increases farm plot capacity by 1.",
+                apply: (state) => { state.plotCapacity += 1; }
+            },
+            harvest_multi: {
+                name: "Better Seeds",
+                baseCost: 50,
+                costMultiplier: 2.0,
+                effect: "Increases harvest yield multiplier by 0.1.",
+                apply: (state) => { state.harvestMultiplier += 0.1; }
+            },
+            auto_plant: {
+                name: "Auto Planter",
+                baseCost: 100,
+                costMultiplier: 3.0,
+                effect: "Automatically plants 1 plot every 5 seconds per level, if seeds and space are available.",
+                apply: (state) => { state.autoPlantLevel += 1; }
+            },
+            auto_harvest: {
+                name: "Auto Harvester",
+                baseCost: 150,
+                costMultiplier: 3.5,
+                effect: "Automatically harvests 1 ready plot every 5 seconds per level.",
+                apply: (state) => { state.autoHarvestLevel += 1; }
+            }
+        };
+        
+        function getUpgradeCost(key) {
+            const up = UPGRADES[key];
+            const currentLevel = gameState[key] || 0;
+            return Math.floor(up.baseCost * Math.pow(up.costMultiplier, currentLevel));
+        }
+        
+        // Returns the reference for the user's private game state document
+        function getGameDocRef() {
+            if (!db || !userId) return null;
+            return firebase.doc(db, 'artifacts', appId, 'users', userId, GAME_COLLECTION, GAME_DOC_ID);
+        }
+
+        // Returns the reference for the user's private profile document
+        function getProfileDocRef() {
+            if (!db || !userId) return null;
+            return firebase.doc(db, 'artifacts', appId, 'users', userId, USER_PROFILE_COLLECTION, USER_PROFILE_DOC_ID);
+        }
+
+        // Returns the reference for the public chat collection
+        function getChatCollectionRef() {
+            if (!db) return null;
+            return firebase.collection(db, 'artifacts', appId, 'public', 'data', CHAT_COLLECTION);
+        }
+        
+        // NEW: Returns the reference for the public unique usernames collection
+        function getUsernamesCollectionRef() {
+            if (!db) return null;
+            return firebase.collection(db, 'artifacts', appId, 'public', 'data', USERNAMES_COLLECTION);
+        }
+
+        function log(message, type = 'info') {
+            const logContainer = document.getElementById('log-container');
+            const logEntry = document.createElement('div');
+            const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            let color = 'text-gray-600';
+
+            if (type === 'error') color = 'text-red-500 font-semibold';
+            if (type === 'success') color = 'text-green-600';
+            if (type === 'purchase') color = 'text-purple-600';
+            if (type === 'tick') color = 'text-blue-600';
+
+            logEntry.className = color;
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+
+            if (logContainer.firstChild) {
+                logContainer.insertBefore(logEntry, logContainer.firstChild);
+            } else {
+                logContainer.appendChild(logEntry);
+            }
+
+            while (logContainer.children.length > 50) {
+                logContainer.removeChild(logContainer.lastChild);
+            }
+        }
+
+        async function saveGame(state) {
+            const ref = getGameDocRef();
+            if (ref) {
+                try {
+                    const dataToSave = {
+                        ...state,
+                        plots: state.plots.map(p => ({
+                            id: p.id,
+                            plantedAt: p.plantedAt,
+                            isReady: p.isReady
+                        })),
+                        lastPlayed: firebase.Timestamp.now()
+                    };
+
+                    await firebase.setDoc(ref, dataToSave);
+                } catch (e) {
+                    log(`Error saving game: ${e.message}`, 'error');
+                }
+            }
+        }
+
+        function growPlots(state, now) {
+            let maturedCount = 0;
+            const maturityTime = GROWTH_TIME_SECONDS * 1000;
+
+            state.plots.forEach(plot => {
+                if (!plot.isReady && (now - plot.plantedAt) >= maturityTime) {
+                    plot.isReady = true;
+                    maturedCount++;
+                }
+            });
+            return maturedCount;
+        }
+
+        function applyOfflineProgress(state) {
+            const now = Date.now();
+            const lastTime = state.lastPlayed.toMillis ? state.lastPlayed.toMillis() : state.lastPlayed;
+            const timeDiffSeconds = Math.floor((now - lastTime) / 1000);
+
+            if (timeDiffSeconds > 5) {
+                state.plots.forEach(plot => {
+                    const timeSincePlanted = now - plot.plantedAt;
+                    if (!plot.isReady && timeSincePlanted >= GROWTH_TIME_SECONDS * 1000) {
+                        plot.isReady = true;
+                    }
+                });
+
+                let harvestedFromAuto = 0;
+                if (state.autoHarvestLevel > 0) {
+                    const autoHarvestRate = 5; 
+                    const potentialHarvests = Math.floor((timeDiffSeconds * state.autoHarvestLevel) / autoHarvestRate);
+
+                    const readyPlots = state.plots.filter(p => p.isReady).sort((a,b) => a.plantedAt - b.plantedAt);
+                    harvestedFromAuto = Math.min(potentialHarvests, readyPlots.length);
+
+                    if (harvestedFromAuto > 0) {
+                        for (let i = 0; i < harvestedFromAuto; i++) {
+                            const plotToHarvest = readyPlots[i];
+                            const indexToRemove = state.plots.findIndex(p => p.id === plotToHarvest.id);
+                            if (indexToRemove !== -1) {
+                                state.plots.splice(indexToRemove, 1);
+                            }
+                        }
+                    }
+                }
+
+                const moneyGained = harvestedFromAuto * (1.0 * state.harvestMultiplier);
+                state.money += moneyGained;
+
+                if (moneyGained > 0) {
+                    log(`While you were away: Gained $${moneyGained.toFixed(2)} from ${harvestedFromAuto} auto-harvests over ${timeDiffSeconds}s.`, 'success');
+                } else if (timeDiffSeconds > 60) {
+                    log(`You were away for ${Math.floor(timeDiffSeconds / 60)} minutes. Check the log for any maturing plots!`);
+                }
+            }
+            state.lastPlayed = now;
+        }
+
+
+        // --- Profile/Username Functions ---
+
+        async function fetchAndSetUsername(defaultName) {
+            const ref = getProfileDocRef();
+            let currentUsername = defaultName;
+
+            try {
+                const docSnap = await firebase.getDoc(ref);
+                if (docSnap.exists() && docSnap.data().username) {
+                    currentUsername = docSnap.data().username;
+                    log(`Loaded custom username: ${currentUsername}`, 'info');
+                } else {
+                    log(`Using default display name: ${defaultName}`, 'info');
+                }
+            } catch (e) {
+                log(`Error fetching profile: ${e.message}`, 'error');
+            }
+            
+            displayUserId = currentUsername;
+            document.getElementById('user-id-display').textContent = displayUserId;
+            document.getElementById('current-display-name').textContent = displayUserId;
+            
+            // Set input value only if it's not the default User:XXXX name
+            document.getElementById('username-input').value = displayUserId.startsWith('User:') ? '' : displayUserId;
+        }
+
+        window.updateUsername = async function() {
+            const setUsernameBtn = document.getElementById('set-username-btn');
+            setUsernameBtn.disabled = true;
+
+            if (!isAuthReady || !userId) {
+                showModal('Game not fully loaded. Please wait a moment.');
+                log('Authentication not ready when trying to set username.', 'error');
+                setUsernameBtn.disabled = false;
+                return;
+            }
+
+            const usernameInput = document.getElementById('username-input');
+            const requestedUsername = usernameInput.value.trim();
+            const normalizedUsername = requestedUsername.toLowerCase();
+            const profileRef = getProfileDocRef();
+            const currentDisplayName = displayUserId;
+            
+            // 1. Client-side validation
+            if (requestedUsername.length < 3 || requestedUsername.length > 20) {
+                showModal('Username must be between 3 and 20 characters long.');
+                setUsernameBtn.disabled = false;
+                return;
+            }
+            if (!/^[a-zA-Z0-9 _]+$/.test(requestedUsername)) {
+                showModal('Username can only contain letters, numbers, spaces, and underscores.');
+                setUsernameBtn.disabled = false;
+                return;
+            }
+            if (currentDisplayName === requestedUsername) {
+                showModal('Your display name is already set to that value.');
+                setUsernameBtn.disabled = false;
+                return;
+            }
+
+            try {
+                // 2. Use a transaction to atomically check and reserve the username
+                await firebase.runTransaction(db, async (transaction) => {
+                    const usernameDocRef = firebase.doc(getUsernamesCollectionRef(), normalizedUsername);
+                    const usernameDoc = await transaction.get(usernameDocRef);
+                    
+                    log(`Transaction started: checking if ${normalizedUsername} is available.`, 'tick');
+
+                    if (usernameDoc.exists()) {
+                        // Check if the name is owned by a different user
+                        if (usernameDoc.data().userId !== userId) {
+                            throw new Error('USERNAME_TAKEN'); 
+                        }
+                        // If it exists and is owned by the current user, we continue (no old name cleanup needed).
+                    } 
+                    
+                    // If the user is changing their name from an old name, we need to release the old name.
+                    // This logic only runs if the current display name is *not* a default User:xxxx ID
+                    if (!currentDisplayName.startsWith('User:') && currentDisplayName.toLowerCase() !== normalizedUsername) {
+                        const oldUsernameDocRef = firebase.doc(getUsernamesCollectionRef(), currentDisplayName.toLowerCase());
+                        transaction.delete(oldUsernameDocRef);
+                        log(`Transaction: Released old username ${currentDisplayName.toLowerCase()}`, 'tick');
+                    }
+                    
+                    // Reserve the new username for this user.
+                    transaction.set(usernameDocRef, { userId: userId, originalCasing: requestedUsername });
+                    
+                    // Update the user's private profile document.
+                    transaction.set(profileRef, { username: requestedUsername });
+                    log(`Transaction: Reserved ${normalizedUsername} and updated profile.`, 'tick');
+
+                });
+
+                // 3. Success (ran outside the transaction)
+                log(`Username successfully set to ${requestedUsername}.`, 'success');
+                
+                // Fetch and set the new username to update displayUserId globally
+                await fetchAndSetUsername(requestedUsername); 
+                
+                showModal(`Success! Username updated to: ${requestedUsername}`);
+
+            } catch (e) {
+                if (e.message === 'USERNAME_TAKEN') {
+                    showModal(`The username "${requestedUsername}" is already taken by another user. Please choose a different one.`);
+                    log(`Failed to set username: ${requestedUsername} is taken.`, 'error');
+                } else if (e.message.includes('The transaction was aborted')) {
+                    // Generic Firebase error (often network or retry limits)
+                    showModal(`The attempt to set your username failed due to a database conflict or network error. Please try again.`);
+                    log(`Transaction aborted: ${e.message}`, 'error');
+                } else {
+                    log(`Error saving username (transaction failed): ${e.message}`, 'error');
+                    showModal(`Failed to set username due to an unexpected error. Error: ${e.message}`);
+                }
+            } finally {
+                setUsernameBtn.disabled = false;
+            }
+        }
+        // --- End Profile/Username Functions ---
+
+
+        // --- Chat Functions ---
+        function setupChatListener() {
+            const chatRef = getChatCollectionRef();
+            if (!chatRef) {
+                log('Error: Chat collection reference missing.', 'error');
+                return;
+            }
+
+            const q = firebase.query(chatRef, firebase.orderBy('timestamp', 'desc'), firebase.limit(50));
+
+            firebase.onSnapshot(q, (snapshot) => {
+                const chatContainer = document.getElementById('chat-container');
+                chatContainer.innerHTML = ''; 
+
+                const messages = [];
+                snapshot.forEach(doc => {
+                    messages.push(doc.data());
+                });
+
+                messages.reverse();
+
+                messages.forEach(msg => {
+                    const msgElement = document.createElement('div');
+                    const isCurrentUser = msg.userId === userId; 
+                    
+                    const messageClass = isCurrentUser
+                        ? 'bg-green-300 self-end rounded-lg p-2 max-w-[80%]'
+                        : 'bg-white self-start rounded-lg p-2 max-w-[80%] border border-gray-200';
+
+                    const userDisplay = msg.displayUserId || 'Unknown';
+                    const userColor = isCurrentUser ? 'text-green-800' : 'text-gray-600';
+
+                    msgElement.className = `flex flex-col ${messageClass} shadow-sm`;
+                    msgElement.innerHTML = `
+                        <span class="text-xs font-bold ${userColor}">${userDisplay}</span>
+                        <span class="text-sm text-gray-900 break-words">${msg.message}</span>
+                    `;
+
+                    chatContainer.prepend(msgElement);
+                });
+                
+                if (messages.length === 0) {
+                    chatContainer.innerHTML = '<div class="text-gray-400 text-center text-sm">Welcome to the Global Chat!</div>';
+                }
+
+                if (chatContainer.scrollTop > -20) {
+                     chatContainer.scrollTop = chatContainer.scrollHeight * -1;
+                }
+
+            }, (error) => {
+                log(`Error listening to chat: ${error.message}`, 'error');
+            });
+        }
+
+        window.handleSendMessage = function() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+
+            if (!isAuthReady || !db || !userId) {
+                showModal('Chat is not ready. Please wait for the game to fully load.');
+                return;
+            }
+
+            if (message.length > 0) {
+                const chatRef = getChatCollectionRef();
+                if (chatRef) {
+                    firebase.addDoc(chatRef, {
+                        userId: userId,
+                        displayUserId: displayUserId, // Use the current custom/default display name
+                        message: message,
+                        timestamp: firebase.Timestamp.now()
+                    }).then(() => {
+                        input.value = '';
+                    }).catch(e => {
+                        log(`Error sending message: ${e.message}`, 'error');
+                    });
+                }
+            } else {
+                showModal('Please enter a message before sending.');
+            }
+        }
+
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && document.getElementById('chat-input') === document.activeElement) {
+                handleSendMessage();
+            }
+        });
+        // --- End Chat Functions ---
+
+        // --- Auth Functions (Same as before) ---
+        window.signInWithGoogle = function() {
+            if (!auth) {
+                showModal('Firebase Auth not ready.');
+                return;
+            }
+            const provider = new firebase.GoogleAuthProvider();
+            firebase.signInWithPopup(auth, provider)
+                .then((result) => {
+                    log(`Successfully signed in with Google: ${result.user.displayName}`, 'success');
+                })
+                .catch((error) => {
+                    log(`Google Sign-In failed: ${error.message}`, 'error');
+                    showModal(`Google Sign-In Failed. Error: ${error.code}`);
+                });
+        }
+
+        window.handleAuthAction = function() {
+            const button = document.getElementById('auth-button');
+            if (auth && auth.currentUser) {
+                if (!auth.currentUser.isAnonymous) {
+                    firebase.signOut(auth);
+                    log('User signed out.', 'info');
+                } else {
+                    signInWithGoogle();
+                }
+            }
+        }
+        // --- End Auth Functions ---
+
+
+        function setupFirestoreListener(user) {
+            userId = user.uid;
+            
+            // Determine the default display name (Google Name > Anonymous ID)
+            const defaultDisplayName = user.displayName || (user.isAnonymous ? `User: ${userId.substring(0, 8)}` : `User: ${userId.substring(0, 8)}`);
+
+            // Fetch the custom username from the profile document
+            fetchAndSetUsername(defaultDisplayName);
+
+            const button = document.getElementById('auth-button');
+            if (user.isAnonymous) {
+                button.textContent = "Sign in with Google";
+                button.classList.remove('bg-red-500', 'hover:bg-red-600');
+                button.classList.add('bg-blue-500', 'hover:bg-blue-600');
+            } else {
+                button.textContent = "Sign Out";
+                button.classList.remove('bg-blue-500', 'hover:bg-blue-600');
+                button.classList.add('bg-red-500', 'hover:bg-red-600');
+            }
+            
+            const ref = getGameDocRef();
+
+            if (ref) {
+                firebase.onSnapshot(ref, (docSnap) => {
+                    let loadedState = null;
+                    if (docSnap.exists()) {
+                        loadedState = docSnap.data();
+                        log(`Game state loaded for ${displayUserId}.`, 'success');
+                    }
+
+                    if (loadedState) {
+                        gameState = { ...gameState, ...loadedState };
+
+                        if (!Array.isArray(gameState.plots)) gameState.plots = [];
+                        gameState.plots = gameState.plots.map(p => ({
+                            id: p.id || Math.random().toString(36).substring(2, 9),
+                            plantedAt: p.plantedAt.toMillis ? p.plantedAt.toMillis() : p.plantedAt,
+                            isReady: p.isReady
+                        }));
+
+                        ['money', 'seeds', 'plotCapacity', 'harvestMultiplier', 'autoPlantLevel', 'autoHarvestLevel'].forEach(key => {
+                            gameState[key] = parseFloat(gameState[key] || 0);
+                        });
+
+                        applyOfflineProgress(gameState);
+
+                    } else {
+                        log('No existing game found for this user. Starting new game.');
+                        saveGame(gameState);
+                    }
+
+                    gameState.isReady = true;
+                    renderGame();
+                    setupChatListener(); 
+                }, (error) => {
+                    log(`Error fetching game state: ${error.message}`, 'error');
+                });
+            }
+        }
+
+        function initializeFirebase() {
+            if (!firebaseConfig) {
+                log('Error: Firebase config is missing. Cannot save progress.', 'error');
+                return;
+            }
+
+            try {
+                // firebase.setLogLevel('Debug'); // Uncomment this if you need to see deep Firestore logs
+                const app = firebase.initializeApp(firebaseConfig);
+                db = firebase.getFirestore(app);
+                auth = firebase.getAuth(app);
+
+                firebase.onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        isAuthReady = true;
+                        setupFirestoreListener(user);
+                    } else {
+                        try {
+                            if (initialAuthToken) {
+                                await firebase.signInWithCustomToken(auth, initialAuthToken);
+                            } else {
+                                await firebase.signInAnonymously(auth);
+                            }
+                        } catch (e) {
+                            log(`Authentication failed: ${e.message}. Game will be read-only until manual sign-in.`, 'error');
+                        }
+                    }
+                });
+            } catch (e) {
+                log(`Firebase initialization error: ${e.message}`, 'error');
+            }
+        }
+
+        // --- Game Logic (Same as before) ---
+        function showModal(message) {
+            const modal = document.getElementById('message-modal');
+            document.getElementById('modal-text').textContent = message;
+            modal.classList.remove('hidden', 'opacity-0');
+            modal.classList.add('flex', 'opacity-100');
+        }
+
+        window.closeModal = function() {
+            const modal = document.getElementById('message-modal');
+            modal.classList.remove('flex', 'opacity-100');
+            modal.classList.add('hidden', 'opacity-0');
+        }
+
+        window.plant = function() {
+            if (!gameState.isReady) return;
+            if (gameState.seeds >= 1 && gameState.plots.length < gameState.plotCapacity) {
+                gameState.seeds--;
+                gameState.plots.push({ id: Math.random().toString(36).substring(2, 9), plantedAt: Date.now(), isReady: false });
+                log('Planted 1 plot. Growth cycle started (10s).', 'info');
+                saveGame(gameState);
+            } else if (gameState.seeds === 0) {
+                showModal('Not enough Seeds! Refill water to grow more seeds.');
+            } else {
+                showModal('Plot Capacity Reached! Buy Expand Farmland upgrades.');
+            }
+            renderGame();
+        }
+
+        window.water = function() {
+            if (!gameState.isReady) return;
+            if (gameState.money >= WATER_REFILL_COST) {
+                gameState.money -= WATER_REFILL_COST;
+                gameState.seeds += 10;
+                log(`Refilled water for $${WATER_REFILL_COST}. Gained 10 Seeds.`, 'success');
+                saveGame(gameState);
+            } else {
+                showModal(`Not enough money! Need $${WATER_REFILL_COST.toFixed(2)} to refill water.`);
+            }
+            renderGame();
+        }
+
+        window.harvest = function() {
+            if (!gameState.isReady) return;
+
+            const readyPlots = gameState.plots.filter(p => p.isReady).sort((a,b) => a.plantedAt - b.plantedAt);
+
+            if (readyPlots.length > 0) {
+                const plotToHarvest = readyPlots[0];
+                const harvestIndex = gameState.plots.findIndex(p => p.id === plotToHarvest.id);
+                const yieldAmount = 1.0 * gameState.harvestMultiplier;
+                gameState.money += yieldAmount;
+                gameState.plots.splice(harvestIndex, 1);
+                log(`Harvested +$${yieldAmount.toFixed(2)} (Tier x${gameState.harvestMultiplier.toFixed(1)}).`, 'success');
+                saveGame(gameState);
+            } else {
+                showModal('No plots ready to harvest! Wait for planted plots to mature (10s).');
+            }
+            renderGame();
+        }
+
+        window.buyUpgrade = function(key) {
+            if (!gameState.isReady) return;
+            const cost = getUpgradeCost(key);
+            const upgrade = UPGRADES[key];
+
+            if (key === 'plot_cap' && gameState.plotCapacity >= MAX_PLOT_CAPACITY) {
+                showModal(`You have reached the maximum plot capacity of ${MAX_PLOT_CAPACITY}!`);
+                return;
+            }
+
+            if (gameState.money >= cost) {
+                gameState.money -= cost;
+                upgrade.apply(gameState);
+                gameState[key]++;
+                log(`Purchased ${upgrade.name} (Lvl ${gameState[key]}) for $${cost.toFixed(2)}.`, 'purchase');
+                saveGame(gameState);
+            } else {
+                showModal(`Not enough money! Need $${cost.toFixed(2)} to buy ${upgrade.name}.`);
+            }
+            renderGame();
+        }
+
+        // --- Render and Game Tick (Same as before) ---
+
+        function renderUpgrades() {
+            const container = document.getElementById('upgrades-container');
+            container.innerHTML = '';
+
+            for (const key in UPGRADES) {
+                const upgrade = UPGRADES[key];
+                const currentLevel = gameState[key] || 0;
+                const cost = getUpgradeCost(key);
+                let disabled = gameState.money < cost;
+                let buttonText = `Buy ($${cost.toFixed(2)})`;
+                let isMaxed = false;
+
+                if (key === 'plot_cap' && gameState.plotCapacity >= MAX_PLOT_CAPACITY) {
+                    disabled = true;
+                    buttonText = 'MAXED';
+                    isMaxed = true;
+                }
+
+                let tierDisplay = '';
+                if (key === 'harvest_multi') {
+                    tierDisplay = ` (Current Yield: x${gameState.harvestMultiplier.toFixed(1)})`;
+                }
+
+
+                const cardHtml = `
+                    <div class="card bg-white p-4 rounded-xl flex justify-between items-center shadow-md">
+                        <div class="flex-grow">
+                            <h3 class="font-bold text-gray-800">${upgrade.name} (Lvl ${currentLevel})${tierDisplay}</h3>
+                            <p class="text-xs text-gray-500">${upgrade.effect}</p>
+                        </div>
+                        <button onclick="buyUpgrade('${key}')" ${disabled ? 'disabled' : ''}
+                            class="ml-4 px-4 py-2 rounded-lg ${isMaxed ? 'bg-gray-500' : 'bg-purple-500 hover:bg-purple-600'} text-white font-semibold transition disabled:bg-gray-400 disabled:cursor-not-allowed flex-shrink-0">
+                            ${buttonText}
+                        </button>
+                    </div>
+                `;
+                container.innerHTML += cardHtml;
+            }
+        }
+
+        function renderFarmPlots() {
+            const container = document.getElementById('farm-plots-container');
+            container.innerHTML = '';
+            const now = Date.now();
+
+            document.getElementById('plots-count-display').textContent = gameState.plots.length;
+            document.getElementById('plot-capacity-display-farm').textContent = gameState.plotCapacity;
+
+            gameState.plots.forEach(plot => {
+                const plotElement = document.createElement('div');
+                plotElement.classList.add('farm-plot');
+
+                if (plot.isReady) {
+                    plotElement.classList.add('ready');
+                    plotElement.innerHTML = '🥕';
+                } else {
+                    plotElement.classList.add('growing');
+                    plotElement.innerHTML = '🌱';
+                    const timeRemaining = Math.max(0, GROWTH_TIME_SECONDS - Math.floor((now - plot.plantedAt) / 1000));
+                    plotElement.innerHTML += `<span class="plot-timer">${timeRemaining}s</span>`;
+                }
+                container.appendChild(plotElement);
+            });
+
+            const emptyPlotsCount = gameState.plotCapacity - gameState.plots.length;
+            for (let i = 0; i < emptyPlotsCount; i++) {
+                const emptyPlotElement = document.createElement('div');
+                emptyPlotElement.classList.add('farm-plot', 'empty');
+                emptyPlotElement.innerHTML = '🌾';
+                container.appendChild(emptyPlotElement);
+            }
+        }
+
+
+        function renderGame() {
+            if (!gameState.isReady) return;
+
+            const plotsReady = gameState.plots.filter(p => p.isReady).length;
+
+            document.getElementById('money-display').textContent = gameState.money.toFixed(2);
+            document.getElementById('seeds-display').textContent = gameState.seeds;
+
+            document.getElementById('plant-btn').disabled = gameState.seeds < 1 || gameState.plots.length >= gameState.plotCapacity;
+            document.getElementById('harvest-btn').disabled = plotsReady < 1;
+
+            renderUpgrades();
+            renderFarmPlots();
+        }
+
+        let autoPlantTimer = 0;
+        let autoHarvestTimer = 0;
+
+        function autoTick() {
+            if (!gameState.isReady) return;
+
+            const now = Date.now();
+            let actionTaken = false;
+
+            const maturedCount = growPlots(gameState, now);
+            if (maturedCount > 0) {
+                actionTaken = true;
+            }
+
+            autoPlantTimer++;
+            autoHarvestTimer++;
+
+            // Auto Plant (1 seed planted per 5s per level)
+            if (gameState.autoPlantLevel > 0 && autoPlantTimer >= 5) {
+                for (let i = 0; i < gameState.autoPlantLevel; i++) {
+                    if (gameState.seeds >= 1 && gameState.plots.length < gameState.plotCapacity) {
+                        gameState.seeds--;
+                        gameState.plots.push({ id: Math.random().toString(36).substring(2, 9), plantedAt: now, isReady: false });
+                        actionTaken = true;
+                    }
+                }
+                autoPlantTimer = 0;
+            }
+
+            // Auto Harvest (1 plot harvested per 5s per level)
+            if (gameState.autoHarvestLevel > 0 && autoHarvestTimer >= 5) {
+                for (let i = 0; i < gameState.autoHarvestLevel; i++) {
+                    const readyPlots = gameState.plots.filter(p => p.isReady).sort((a,b) => a.plantedAt - b.plantedAt);
+                    if (readyPlots.length > 0) {
+                        const plotToHarvest = readyPlots[0];
+                        const harvestIndex = gameState.plots.findIndex(p => p.id === plotToHarvest.id);
+                        if (harvestIndex !== -1) {
+                            const yieldAmount = 1.0 * gameState.harvestMultiplier;
+                            gameState.money += yieldAmount;
+                            gameState.plots.splice(harvestIndex, 1);
+                            actionTaken = true;
+                        }
+                    }
+                }
+                autoHarvestTimer = 0;
+            }
+
+            if (actionTaken) {
+                saveGame(gameState);
+            }
+            renderGame();
+        }
+
+        // Initialize the game
+        window.onload = function() {
+            initializeFirebase();
+            // Start the game loop (1 second tick)
+            setInterval(autoTick, 1000);
+        };
+    </script>
+</body>
+</html>
