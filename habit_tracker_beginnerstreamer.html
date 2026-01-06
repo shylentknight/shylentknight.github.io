@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Streamer Roadmap Habit Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #1e1e2f;
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #ffcc00;
+    }
+    .section {
+      margin: 20px 0;
+      padding: 15px;
+      background: #2a2a3d;
+      border-radius: 8px;
+    }
+    .section h2 {
+      color: #ff9900;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      margin: 10px 0;
+    }
+    input[type="checkbox"] {
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Beginner Streamer Roadmap</h1>
+
+  <div class="section">
+    <h2>Setup & Preparation</h2>
+    <ul>
+      <li><input type="checkbox" id="setup1"> Create your streaming account (Twitch/YouTube)</li>
+      <li><input type="checkbox" id="setup2"> Set up OBS or streaming software</li>
+      <li><input type="checkbox" id="setup3"> Test microphone and camera quality</li>
+      <li><input type="checkbox" id="setup4"> Design a simple overlay or layout</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>Content Habits</h2>
+    <ul>
+      <li><input type="checkbox" id="content1"> Stream at least 3 times per week</li>
+      <li><input type="checkbox" id="content2"> Plan topics/games before going live</li>
+      <li><input type="checkbox" id="content3"> Engage with chat regularly</li>
+      <li><input type="checkbox" id="content4"> Save highlights or clips</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>Community Building</h2>
+    <ul>
+      <li><input type="checkbox" id="community1"> Create social media accounts</li>
+      <li><input type="checkbox" id="community2"> Post updates after streams</li>
+      <li><input type="checkbox" id="community3"> Join other streamers’ chats</li>
+      <li><input type="checkbox" id="community4"> Thank new followers/subscribers</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>Growth Milestones</h2>
+    <ul>
+      <li><input type="checkbox" id="growth1"> Reach 50 followers</li>
+      <li><input type="checkbox" id="growth2"> Stream consistently for 1 month</li>
+      <li><input type="checkbox" id="growth3"> Apply for Affiliate/Monetization</li>
+      <li><input type="checkbox" id="growth4"> Collaborate with another streamer</li>
+    </ul>
+  </div>
+
+  <script>
+    // Load saved state
+    document.querySelectorAll('input[type="checkbox"]').forEach(box => {
+      const saved = localStorage.getItem(box.id);
+      if (saved === "true") {
+        box.checked = true;
+      }
+      // Save state on change
+      box.addEventListener('change', () => {
+        localStorage.setItem(box.id, box.checked);
+      });
+    });
+  </script>
+</body>
+</html>
