@@ -29,57 +29,15 @@
     color: #00eaff;
   }
   #history {
-  margin-top: 40px;
-  max-width: 400px;
-  margin-left: auto;
-  margin-right: auto;
-  text-align: left;
-}
-
-#history h2 {
-  text-align: center;
-  color: #ff9c00;
-  margin-bottom: 10px;
-}
-
-#historyList {
-  background: #222;
-  padding: 15px;
-  border-radius: 8px;
-  max-height: 250px;
-  overflow-y: auto;
-  font-size: 18px;
-  line-height: 1.6;
-}
-
-.history-item {
-  padding: 6px 0;
-  border-bottom: 1px solid #333;
-}
-
-.history-item:last-child {
-  border-bottom: none;
-}
-
-.role-tag {
-  color: #ff9c00;
-  font-weight: bold;
-  margin-right: 6px;
-}
-  #auto-controls {
-    margin-top: 30px;
-  }
-  input {
-    padding: 6px;
-    font-size: 16px;
-    width: 80px;
-    text-align: center;
+    margin-top: 40px;
+    font-size: 18px;
+    color: #ccc;
   }
 </style>
 </head>
 <body>
 
-<h1>Just a Overwatch Hero Picker</h1>
+<h1>Another Overwatch Hero Picker</h1>
 
 <button onclick="pick('tank')">Pick Tank</button>
 <button onclick="pick('damage')">Pick Damage</button>
@@ -87,49 +45,33 @@
 <button onclick="pick('flex')">Flex</button>
 
 <div id="result"></div>
-<div id="history">
-  <h2>History</h2>
-  <div id="historyList"></div>
-</div>
-
-
-
-<div id="auto-controls">
-  <br>
-  <input id="intervalInput" type="number" value="5" min="1"> seconds
-  <br><br>
-  <button onclick="startAutoPick()">Start Auto-Pick</button>
-  <button onclick="stopAutoPick()">Stop Auto-Pick</button>
-</div>
+<div id="history"></div>
 
 <script>
   const pools = {
     tank: [
       "D.Va", "Doomfist", "Junker Queen", "Mauga", "Orisa",
       "Ramattra", "Reinhardt", "Roadhog", "Sigma",
-      "Winston", "Wrecking Ball", "Zarya",
-      "Hazard"
+      "Winston", "Wrecking Ball", "Zarya"
     ],
     damage: [
       "Ashe", "Bastion", "Cassidy", "Echo", "Genji", "Hanzo",
       "Junkrat", "Mei", "Pharah", "Reaper", "Sojourn",
       "Soldier: 76", "Sombra", "Symmetra", "Torbjörn",
-      "Tracer", "Venture", "Widowmaker", "Freja",
-      "Vendetta"
+      "Tracer", "Venture", "Widowmaker", "Freja"
     ],
     support: [
       "Ana", "Baptiste", "Brigitte", "Illari", "Kiriko",
       "Lifeweaver", "Lúcio", "Mercy", "Moira",
-      "Zenyatta", "Aqua",
-      "Wuyang",
-      "Juno"
+      "Zenyatta", "Wuyang"
     ]
   };
 
+  // No-repeat tracking
   const used = { tank: [], damage: [], support: [], flex: [] };
+
+  // History log
   const history = [];
-  let autoInterval = null;
-  let lastRole = "any";
 
   function getPool(role) {
     if (role === "flex") {
@@ -139,48 +81,32 @@
   }
 
   function pick(role) {
-    lastRole = role;
-
     const pool = getPool(role);
     const usedPool = used[role];
 
+    // Reset if all used
     if (usedPool.length === pool.length) {
       usedPool.length = 0;
     }
 
+    // Filter unused heroes
     const available = pool.filter(h => !usedPool.includes(h));
+
+    // Pick random
     const hero = available[Math.floor(Math.random() * available.length)];
 
+    // Mark as used
     usedPool.push(hero);
 
+    // Update UI
     document.getElementById("result").textContent = hero;
 
-    history.unshift({ role, hero });
-    if (history.length > 10) history.pop();
+    // Add to history
+    history.unshift(hero);
+    if (history.length > 5) history.pop();
 
-    const historyList = document.getElementById("historyList");
-historyList.innerHTML = history
-  .map(entry => `
-    <div class="history-item">
-      <span class="role-tag">[${entry.role.toUpperCase()}]</span>
-      ${entry.hero}
-    </div>
-  `)
-  .join("");
-  }
-
-  function startAutoPick() {
-    stopAutoPick();
-
-    const seconds = parseInt(document.getElementById("intervalInput").value, 10);
-    autoInterval = setInterval(() => pick(lastRole), seconds * 1000);
-  }
-
-  function stopAutoPick() {
-    if (autoInterval) {
-      clearInterval(autoInterval);
-      autoInterval = null;
-    }
+    document.getElementById("history").innerHTML =
+      "<strong>History:</strong><br>" + history.join("<br />");
   }
 </script>
 

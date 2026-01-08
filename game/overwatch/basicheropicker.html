@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Overwatch Hero Picker</title>
+    <style>
+:root {
+    --bg: #111;
+    --fg: #eee;
+    --panel: #222;
+    --accent: #ff9c00;
+    --result: #00eaff;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    margin: 0;
+    padding: 30px;
+    text-align: center;
+}
+
+h1 {
+    margin-top: 0;
+}
+
+button {
+    padding: 10px 16px;
+    margin: 5px;
+    border: none;
+    border-radius: 6px;
+    background: var(--accent);
+    color: #111;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#result-container {
+    margin: 20px 0;
+}
+
+#result {
+    font-size: 40px;
+    font-weight: bold;
+    color: var(--result);
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.25s ease;
+}
+
+#result.pop {
+    opacity: 1;
+    transform: scale(1.15);
+}
+
+#grid {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.panel {
+    background: var(--panel);
+    border-radius: 8px;
+    box-shadow: 0 0 10px #0006;
+    overflow: hidden;
+    user-select: none;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #0003;
+    cursor: grab;
+}
+
+.panel-header:active {
+    cursor: grabbing;
+}
+
+.panel-header h2 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--accent);
+}
+
+.panel-toggle {
+    font-size: 18px;
+}
+
+.panel.collapsed .panel-body {
+    display: none;
+}
+
+.panel-body {
+    padding: 12px;
+    text-align: left;
+}
+
+#historyList,
+#statsContent,
+#favoritesList,
+#searchResults {
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 6px;
+}
+
+.history-item {
+    padding: 4px 0;
+    cursor: pointer;
+}
+
+.history-item:hover {
+    text-decoration: underline;
+}
+
+.tank { color: #4da6ff !important; font-weight: bold; }
+.damage { color: #ff4d4d !important; font-weight: bold; }
+.support { color: #4dff88 !important; font-weight: bold; }
+.flex { color: #ffcc00 !important; font-weight: bold; }
+
+.ban-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 6px 10px;
+}
+
+.weight-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 6px 0;
+}
+
+.weight-row input[type=range] {
+    flex: 1;
+}
+
+#exportArea {
+    width: 100%;
+    height: 80px;
+}
+
+.centered {
+    text-align: center;
+}
+
+.button-row {
+    margin-top: 10px;
+}
+
+#heroSearch {
+    width: 100%;
+    padding: 6px;
+    margin-bottom: 10px;
+}
+
+.favorite {
+    color: gold;
+    font-weight: bold;
+}
+
+body.overlay-mode .panel,
+body.overlay-mode #top-controls {
+    display: none;
+}
+
+body.overlay-mode #result {
+    font-size: 32px;
+}
+
+@media (max-width: 900px) {
+    #grid {
+        flex-direction: column;
+    }
+}
+    </style>
+</head>
+<body>
+
+    <h1>Overwatch Hero Picker</h1>
+
+    <div id="top-controls">
+        <div id="role-buttons">
+            <button data-role="tank">Pick Tank</button>
+            <button data-role="damage">Pick Damage</button>
+            <button data-role="support">Pick Support</button>
+            <button data-role="flex">Pick Flex</button>
+        </div>
+        <div id="utility-buttons">
+            <button id="overlayToggle">Toggle Overlay Mode</button>
+            <button id="themeToggle">Theme: <span id="themeLabel">Dark</span></button>
+        </div>
+    </div>
+
+    <div id="result-container">
+        <div id="result"></div>
+    </div>
+
+    <div id="grid">
+
+        <!-- Column 1 -->
+        <div class="column" data-column="1">
+
+            <!-- History Panel -->
+            <div class="panel" data-panel-id="history">
+                <div class="panel-header">
+                    <h2>History</h2>
+                    <span class="panel-toggle">▼</span>
+                </div>
+                <div class="panel-body">
+                    <div id="historyList"></div>
+                </div>
+            </div>
+
+            <!-- Stats Panel -->
+            <div class="panel" data-panel-id="stats">
+                <div class="panel-header">
+                    <h2>Stats</h2>
+                    <span class="panel-toggle">▼</span>
+                </div>
+                <div class="panel-body">
+                    <div id="statsContent"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Column 2 -->
+        <div class="column" data-column="2">
+
+            <!-- Settings / Auto Pick Panel -->
+            <div class="panel" data-panel-id="settings">
+                <div class="panel-header">
+                    <h2>Auto Pick & Settings</h2>
+                    <span class="panel-toggle">▼</span>
+                </div>
+                <div class="panel-body">
+
+                    <h3>Auto Pick</h3>
+                    <div class="centered">
+                        <label>
+                            Interval:
+                            <input id="intervalInput" type="number" value="5" min="1"> sec
+                        </label>
+                        <div class="button-row">
+                            <button id="autoStart">Start</button>
+                            <button id="autoStop">Stop</button>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <h3>Role Weights</h3>
+                    <div class="weight-row">
+                        <span class="tank">Tank</span>
+                        <input type="range" id="wTank" min="0" max="100">
+                        <span id="wTankLabel"></span>
+                    </div>
+                    <div class="weight-row">
+                        <span class="damage">Damage</span>
+                        <input type="range" id="wDamage" min="0" max="100">
+                        <span id="wDamageLabel"></span>
+                    </div>
+                    <div class="weight-row">
+                        <span class="support">Support</span>
+                        <input type="range" id="wSupport" min="0" max="100">
+                        <span id="wSupportLabel"></span>
+                    </div>
+                    <div id="weightTotal"></div>
+
+                    <hr>
+
+                    <h3>Export / Import</h3>
+                    <textarea id="exportArea"></textarea>
+                    <div class="button-row">
+                        <button id="exportBtn">Export</button>
+                        <button id="importBtn">Import</button>
+                        <button id="clearBtn">Clear All</button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Search / Favorites Panel -->
+            <div class="panel" data-panel-id="search-favorites">
+                <div class="panel-header">
+                    <h2>Search & Favorites</h2>
+                    <span class="panel-toggle">▼</span>
+                </div>
+                <div class="panel-body">
+
+                    <h3>Hero Search</h3>
+                    <input type="text" id="heroSearch" placeholder="Search heroes...">
+                    <div id="searchResults"></div>
+
+                    <hr>
+
+                    <h3>Favorites</h3>
+                    <div id="favoritesList"></div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Column 3 -->
+        <div class="column" data-column="3">
+
+            <!-- Tank Bans Panel -->
+            <div class="panel" data-panel-id="ban-tank">
+                <div class="panel-header">
+                    <h2>Tank Bans</h2>
+                    <span class="panel-toggle">▼</span>
+                </div>
+                <div class="panel-body">
+                    <div class="ban-grid" id="banTank"></div>
+                </div>
+            </div>
+
+            <!-- Damage Bans Panel -->
+            <div class="panel" data-panel-id="ban-damage">
+                <div class="panel-header">
+                    <h2>Damage Bans</h2>
+                    <span class="panel-toggle">▼</span>
+                </div>
+                <div class="panel-body">
+                    <div class="ban-grid" id="banDamage"></div>
+                </div>
+            </div>
+
+            <!-- Support Bans Panel -->
+            <div class="panel" data-panel-id="ban-support">
+                <div class="panel-header">
+                    <h2>Support Bans</h2>
+                    <span class="panel-toggle">▼</span>
+                </div>
+                <div class="panel-body">
+                    <div class="ban-grid" id="banSupport"></div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <audio id="sfxPick" preload="auto"
+           src="https://cdn.jsdelivr.net/gh/naptha/tiny-sfx/ui-confirm.mp3"></audio>
+    <audio id="sfxFavorite" preload="auto"
+           src="https://cdn.jsdelivr.net/gh/naptha/tiny-sfx/ui-select.mp3"></audio>
+
+    <script>
+        /* ===========================
+   HERO DATA
+=========================== */
+const heroes = {
+    tank: [
+        "D.Va","Doomfist","Junker Queen","Mauga","Orisa","Ramattra",
+        "Reinhardt","Roadhog","Sigma","Winston","Wrecking Ball","Zarya"
+    ],
+    damage: [
+        "Ashe","Bastion","Cassidy","Echo","Genji","Hanzo","Junkrat","Mei",
+        "Pharah","Reaper","Sojourn","Soldier: 76","Sombra","Symmetra",
+        "Torbjörn","Tracer","Venture","Widowmaker"
+    ],
+    support: [
+        "Ana","Baptiste","Brigitte","Illari","Kiriko","Lifeweaver","Lúcio",
+        "Mercy","Moira","Zenyatta"
+    ]
+};
+
+/* ===========================
+   STATE
+=========================== */
+let history = [];
+let stats = {};
+let favorites = new Set();
+let bans = { tank: new Set(), damage: new Set(), support: new Set() };
+let panelOrder = {};
+let weights = { tank: 33, damage: 33, support: 34 };
+let autoTimer = null;
+let theme = "dark";
+
+/* ===========================
+   LOAD / SAVE
+=========================== */
+function saveAll() {
+    localStorage.setItem("owp_history", JSON.stringify(history));
+    localStorage.setItem("owp_stats", JSON.stringify(stats));
+    localStorage.setItem("owp_favorites", JSON.stringify([...favorites]));
+    localStorage.setItem("owp_bans", JSON.stringify({
+        tank:[...bans.tank], damage:[...bans.damage], support:[...bans.support]
+    }));
+    localStorage.setItem("owp_panelOrder", JSON.stringify(panelOrder));
+    localStorage.setItem("owp_weights", JSON.stringify(weights));
+    localStorage.setItem("owp_theme", theme);
+}
+
+function loadAll() {
+    history = JSON.parse(localStorage.getItem("owp_history") || "[]");
+    stats = JSON.parse(localStorage.getItem("owp_stats") || "{}");
+    favorites = new Set(JSON.parse(localStorage.getItem("owp_favorites") || "[]"));
+
+    const b = JSON.parse(localStorage.getItem("owp_bans") || "{}");
+    if (b.tank) bans.tank = new Set(b.tank);
+    if (b.damage) bans.damage = new Set(b.damage);
+    if (b.support) bans.support = new Set(b.support);
+
+    panelOrder = JSON.parse(localStorage.getItem("owp_panelOrder") || "{}");
+    weights = JSON.parse(localStorage.getItem("owp_weights") || '{"tank":33,"damage":33,"support":34}');
+    theme = localStorage.getItem("owp_theme") || "dark";
+}
+
+/* ===========================
+   RENDERING
+=========================== */
+function renderHistory() {
+    const box = document.getElementById("historyList");
+    box.innerHTML = "";
+    history.slice().reverse().forEach(h => {
+        const div = document.createElement("div");
+        div.className = "history-item";
+        div.textContent = h;
+        box.appendChild(div);
+    });
+}
+
+function renderStats() {
+    const box = document.getElementById("statsContent");
+    box.innerHTML = "";
+    Object.keys(stats).forEach(hero => {
+        const div = document.createElement("div");
+        div.textContent = `${hero}: ${stats[hero]}`;
+        box.appendChild(div);
+    });
+}
+
+function renderFavorites() {
+    const box = document.getElementById("favoritesList");
+    box.innerHTML = "";
+    [...favorites].forEach(hero => {
+        const div = document.createElement("div");
+        div.textContent = hero;
+        div.className = "favorite";
+        box.appendChild(div);
+    });
+}
+
+function renderBans() {
+    const tankBox = document.getElementById("banTank");
+    const dmgBox = document.getElementById("banDamage");
+    const supBox = document.getElementById("banSupport");
+
+    tankBox.innerHTML = "";
+    dmgBox.innerHTML = "";
+    supBox.innerHTML = "";
+
+    heroes.tank.forEach(h => tankBox.appendChild(makeBanButton("tank", h)));
+    heroes.damage.forEach(h => dmgBox.appendChild(makeBanButton("damage", h)));
+    heroes.support.forEach(h => supBox.appendChild(makeBanButton("support", h)));
+}
+
+function makeBanButton(role, hero) {
+    const btn = document.createElement("button");
+    btn.textContent = hero;
+    if (bans[role].has(hero)) btn.style.opacity = "0.4";
+    btn.onclick = () => {
+        if (bans[role].has(hero)) bans[role].delete(hero);
+        else bans[role].add(hero);
+        saveAll();
+        renderBans();
+    };
+    return btn;
+}
+
+/* ===========================
+   HERO PICKING
+=========================== */
+function pickHero(role) {
+    const list = heroes[role].filter(h => !bans[role].has(h));
+    if (list.length === 0) return;
+
+    const hero = list[Math.floor(Math.random() * list.length)];
+
+    history.push(hero);
+    stats[hero] = (stats[hero] || 0) + 1;
+
+    saveAll();
+    renderHistory();
+    renderStats();
+
+    const result = document.getElementById("result");
+    result.textContent = hero;
+    result.classList.remove("pop");
+    void result.offsetWidth;
+    result.classList.add("pop");
+
+    document.getElementById("sfxPick").play();
+}
+
+function pickFlex() {
+    const pool = [];
+    for (let i = 0; i < weights.tank; i++) pool.push("tank");
+    for (let i = 0; i < weights.damage; i++) pool.push("damage");
+    for (let i = 0; i < weights.support; i++) pool.push("support");
+    const role = pool[Math.floor(Math.random() * pool.length)];
+    pickHero(role);
+}
+
+/* ===========================
+   SEARCH
+=========================== */
+function renderSearch() {
+    const q = document.getElementById("heroSearch").value.toLowerCase();
+    const box = document.getElementById("searchResults");
+    box.innerHTML = "";
+
+    const all = [...heroes.tank, ...heroes.damage, ...heroes.support];
+    all.filter(h => h.toLowerCase().includes(q)).forEach(hero => {
+        const div = document.createElement("div");
+        div.textContent = hero;
+        div.onclick = () => toggleFavorite(hero);
+        box.appendChild(div);
+    });
+}
+
+/* ===========================
+   FAVORITES
+=========================== */
+function toggleFavorite(hero) {
+    if (favorites.has(hero)) favorites.delete(hero);
+    else favorites.add(hero);
+
+    document.getElementById("sfxFavorite").play();
+
+    saveAll();
+    renderFavorites();
+}
+
+/* ===========================
+   AUTO PICK
+=========================== */
+function startAuto() {
+    const sec = parseInt(document.getElementById("intervalInput").value);
+    if (sec < 1) return;
+    stopAuto();
+    autoTimer = setInterval(pickFlex, sec * 1000);
+}
+
+function stopAuto() {
+    if (autoTimer) clearInterval(autoTimer);
+    autoTimer = null;
+}
+
+/* ===========================
+   THEME / OVERLAY
+=========================== */
+function applyTheme() {
+    if (theme === "dark") {
+        document.documentElement.style.setProperty("--bg", "#111");
+        document.documentElement.style.setProperty("--fg", "#eee");
+        document.getElementById("themeLabel").textContent = "Dark";
+    } else {
+        document.documentElement.style.setProperty("--bg", "#eee");
+        document.documentElement.style.setProperty("--fg", "#111");
+        document.getElementById("themeLabel").textContent = "Light";
+    }
+}
+
+function toggleTheme() {
+    theme = theme === "dark" ? "light" : "dark";
+    saveAll();
+    applyTheme();
+}
+
+function toggleOverlay() {
+    document.body.classList.toggle("overlay-mode");
+}
+
+/* ===========================
+   EXPORT / IMPORT
+=========================== */
+function exportData() {
+    const data = {
+        history, stats, favorites:[...favorites],
+        bans:{ tank:[...bans.tank], damage:[...bans.damage], support:[...bans.support] },
+        panelOrder, weights, theme
+    };
+    document.getElementById("exportArea").value = JSON.stringify(data);
+}
+
+function importData() {
+    try {
+        const data = JSON.parse(document.getElementById("exportArea").value);
+        history = data.history || [];
+        stats = data.stats || {};
+        favorites = new Set(data.favorites || []);
+        bans.tank = new Set(data.bans?.tank || []);
+        bans.damage = new Set(data.bans?.damage || []);
+        bans.support = new Set(data.bans?.support || []);
+        panelOrder = data.panelOrder || {};
+        weights = data.weights || weights;
+        theme = data.theme || "dark";
+        saveAll();
+        initUI();
+    } catch {}
+}
+
+function clearAll() {
+    localStorage.clear();
+    location.reload();
+}
+
+/* ===========================
+   PANEL COLLAPSE
+=========================== */
+document.addEventListener("click", e => {
+    if (e.target.classList.contains("panel-toggle") ||
+        e.target.parentElement.classList.contains("panel-header")) {
+
+        const panel = e.target.closest(".panel");
+        panel.classList.toggle("collapsed");
+    }
+});
+
+/* ===========================
+   DRAG & DROP PANELS
+=========================== */
+let dragPanel = null;
+
+document.querySelectorAll(".panel-header").forEach(header => {
+    header.addEventListener("mousedown", e => {
+        dragPanel = header.parentElement;
+        dragPanel.style.opacity = "0.5";
+    });
+});
+
+document.addEventListener("mouseup", () => {
+    if (dragPanel) {
+        dragPanel.style.opacity = "1";
+        dragPanel = null;
+        savePanelOrder();
+    }
+});
+
+document.addEventListener("mousemove", e => {
+    if (!dragPanel) return;
+
+    const cols = document.querySelectorAll(".column");
+    cols.forEach(col => {
+        const rect = col.getBoundingClientRect();
+        if (e.clientX > rect.left && e.clientX < rect.right) {
+            col.appendChild(dragPanel);
+        }
+    });
+});
+
+function savePanelOrder() {
+    const cols = document.querySelectorAll(".column");
+    const order = {};
+    cols.forEach(col => {
+        const id = col.dataset.column;
+        order[id] = [...col.querySelectorAll(".panel")].map(p => p.dataset.panelId);
+    });
+    panelOrder = order;
+    saveAll();
+}
+
+function applyPanelOrder() {
+    if (!panelOrder || Object.keys(panelOrder).length === 0) return;
+
+    Object.keys(panelOrder).forEach(colId => {
+        const col = document.querySelector(`.column[data-column="${colId}"]`);
+        panelOrder[colId].forEach(pid => {
+            const panel = document.querySelector(`.panel[data-panel-id="${pid}"]`);
+            if (panel) col.appendChild(panel);
+        });
+    });
+}
+
+/* ===========================
+   INIT
+=========================== */
+function initUI() {
+    renderHistory();
+    renderStats();
+    renderFavorites();
+    renderBans();
+    applyTheme();
+    applyPanelOrder();
+
+    document.getElementById("wTank").value = weights.tank;
+    document.getElementById("wDamage").value = weights.damage;
+    document.getElementById("wSupport").value = weights.support;
+
+    document.getElementById("wTankLabel").textContent = weights.tank;
+    document.getElementById("wDamageLabel").textContent = weights.damage;
+    document.getElementById("wSupportLabel").textContent = weights.support;
+
+    document.getElementById("weightTotal").textContent =
+        `Total: ${weights.tank + weights.damage + weights.support}`;
+}
+
+/* ===========================
+   EVENT LISTENERS
+=========================== */
+document.querySelector("[data-role='tank']").onclick = () => pickHero("tank");
+document.querySelector("[data-role='damage']").onclick = () => pickHero("damage");
+document.querySelector("[data-role='support']").onclick = () => pickHero("support");
+document.querySelector("[data-role='flex']").onclick = pickFlex;
+
+document.getElementById("heroSearch").oninput = renderSearch;
+
+document.getElementById("autoStart").onclick = startAuto;
+document.getElementById("autoStop").onclick = stopAuto;
+
+document.getElementById("exportBtn").onclick = exportData;
+document.getElementById("importBtn").onclick = importData;
+document.getElementById("clearBtn").onclick = clearAll;
+
+document.getElementById("themeToggle").onclick = toggleTheme;
+document.getElementById("overlayToggle").onclick = toggleOverlay;
+
+document.getElementById("wTank").oninput = e => {
+    weights.tank = parseInt(e.target.value);
+    saveAll(); initUI();
+};
+document.getElementById("wDamage").oninput = e => {
+    weights.damage = parseInt(e.target.value);
+    saveAll(); initUI();
+};
+document.getElementById("wSupport").oninput = e => {
+    weights.support = parseInt(e.target.value);
+    saveAll(); initUI();
+};
+
+/* ===========================
+   STARTUP
+=========================== */
+loadAll();
+initUI();
+    </script>
+
+</body>
+</html>

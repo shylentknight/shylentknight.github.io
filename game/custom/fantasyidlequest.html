@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Medieval Village Idle</title>
+  <style>
+    body { font-family: sans-serif; background: #1c1c1c; color: #eee; margin: 0; padding: 20px; }
+    h1, h2, h3 { margin: 0 0 10px; }
+    .section { margin-bottom: 20px; padding: 10px; border: 1px solid #555; border-radius: 6px; background: #262626; }
+    .flex { display: flex; gap: 20px; flex-wrap: wrap; }
+    .column { flex: 1 1 260px; }
+    button { margin: 2px; padding: 4px 8px; cursor: pointer; background:#444; color:#eee; border:1px solid #666; border-radius:3px; }
+    button:disabled { opacity:0.4; cursor:default; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th, td { border-bottom: 1px solid #444; padding: 4px; text-align: left; }
+    .small { font-size: 0.8rem; color: #aaa; }
+    .tag { display:inline-block; padding:2px 6px; border-radius:4px; font-size:0.75rem; margin-left:4px; background:#444; }
+    .locked { color:#888; }
+    .green { color:#8f8; }
+    .red { color:#f88; }
+  </style>
+</head>
+<body>
+
+<h1>🏰 Medieval Village Idle</h1>
+<div class="small" id="offlineInfo"></div>
+
+<div class="section flex">
+  <div class="column">
+    <h2>👥 Population</h2>
+    <div>Villagers: <span id="villagersUsed">0</span>/<span id="villagersMax">0</span></div>
+    <div>Housing Level: <span id="housingLevel">1</span></div>
+    <button id="upgradeHousingBtn">Upgrade Housing</button>
+    <div class="small" id="housingCostText"></div>
+  </div>
+
+  <div class="column">
+    <h2>📦 Resources</h2>
+    <table><tbody id="resourceTable"></tbody></table>
+  </div>
+
+  <div class="column">
+    <h2>🧱 Buildings</h2>
+    <table>
+      <thead><tr><th>Building</th><th>Lvl</th><th></th></tr></thead>
+      <tbody id="buildingTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="section flex">
+  <div class="column">
+    <h2>🧑‍🌾 Jobs</h2>
+    <table>
+      <thead><tr><th>Job</th><th>Assigned</th><th>Max</th><th></th></tr></thead>
+      <tbody id="jobTable"></tbody>
+    </table>
+    <div class="small">Villagers are shared across all jobs.</div>
+  </div>
+
+  <div class="column">
+    <h2>⚔️ Combat</h2>
+    <div id="combatInfo" class="small"></div>
+    <table>
+      <thead><tr><th>Zone</th><th>Req</th><th>Reward</th><th></th></tr></thead>
+      <tbody id="combatTable"></tbody>
+    </table>
+  </div>
+
+  <div class="column">
+    <h2>📜 Tech Tree</h2>
+    <table>
+      <thead><tr><th>Upgrade</th><th>Cost</th><th></th></tr></thead>
+      <tbody id="techTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="section">
+  <h2>💾 Save / Load</h2>
+  <button id="saveBtn">Save Game</button>
+  <button id="loadBtn">Load Game</button>
+  <button id="wipeBtn">Wipe Save</button>
+  <span class="small" id="saveStatus"></span>
+</div>
+
+<script>
+/* =========================
+   Core Game State
+   ========================= */
+
+let game = {
+  lastTick: Date.now(),
+  resources: {
+    harvest: 0,
+    food: 0,
+    wood: 0,
+    planks: 0,
+    ore: 0,
+    bars: 0,
+    gold: 0
+  },
+  jobs: {
+    farmer: { name: "Farmer 🌾", assigned: 0 },
+    lumberjack: { name: "Lumberjack 🌲", assigned: 0 },
+    miner: { name: "Miner ⛏️", assigned: 0 },
+    smelter: { name: "Smelter 🔥", assigned: 0 },
+    carpenter: { name: "Carpenter 🪵", assigned: 0 },
+    masterFarmer: { name: "Master Farmer 👨‍🌾", assigned: 0 }
+  },
+  buildings: {
+    farm: { name: "Farm 🌾", level: 1, baseCost: { wood: 10 } },
+    woodcutter: { name: "Woodcutter's Hut 🌲", level: 1, baseCost: { wood: 10 } },
+    mine: { name: "Mine Entrance ⛏️", level: 1, baseCost: { wood: 10 } },
+    smelter: { name: "Smelter 🔥", level: 0, baseCost: { wood: 30, planks: 5 } },
+    carpenter: { name: "Carpenter's Shed 🪵", level: 0, baseCost: { wood: 25 } },
+    kitchen: { name: "Kitchen 🍲", level: 0, baseCost: { wood: 25, planks: 5 } }
+  },
+  housing: {
+    level: 1,
+    baseCost: { wood: 20 }
+  },
+  tech: {
+    betterTools: { name: "Better Tools", bought: false, cost: { bars: 10 }, desc: "+25% all production" },
+    ironStoves: { name: "Iron Stoves", bought: false, cost: { bars: 5, planks: 10 }, desc: "+50% Master Farmer efficiency" },
+    sturdyCarts: { name: "Sturdy Carts", bought: false, cost: { planks: 15 }, desc: "+25% wood & ore" }
+  },
+  combat: {
+    zones: [
+      {
+        id: "forestEdge",
+        name: "Forest Edge",
+        req: { food: 10 },
+        reward: { wood: 20, ore: 5 },
+        time: 5
+      },
+      {
+        id: "oldMine",
+        name: "Old Mine",
+        req: { food: 20, bars: 5 },
+        reward: { ore: 30, gold: 5 },
+        time: 8
+      }
+    ],
+    active: null
+  },
+  tickIntervalMs: 1000
+};
+
+/* =========================
+   Helper Functions
+   ========================= */
+
+function getBuildingMaxWorkers(level) {
+  if (level <= 0) return 0;
+  return 1 + Math.floor(level / 2);
+}
+
+function getBuildingProductionMultiplier(level) {
+  if (level <= 0) return 0;
+  let mult = 1 + 0.10 * Math.floor(level / 2);
+  if (game.tech.betterTools.bought) mult *= 1.25;
+  return mult;
+}
+
+function canAfford(cost) {
+  for (const res in cost) {
+    if ((game.resources[res] || 0) < cost[res]) return false;
+  }
+  return true;
+}
+
+function payCost(cost) {
+  for (const res in cost) {
+    game.resources[res] -= cost[res];
+  }
+}
+
+function getBuildingLevelCost(key) {
+  const b = game.buildings[key];
+  const mult = 1 + b.level * 0.5;
+  const cost = {};
+  for (const res in b.baseCost) {
+    cost[res] = Math.floor(b.baseCost[res] * mult);
+  }
+  return cost;
+}
+
+function getHousingCost() {
+  const lvl = game.housing.level;
+  const mult = 1 + (lvl - 1) * 0.6;
+  const cost = {};
+  for (const res in game.housing.baseCost) {
+    cost[res] = Math.floor(game.housing.baseCost[res] * mult);
+  }
+  return cost;
+}
+
+function getMaxVillagers() {
+  return 5 + (game.housing.level - 1) * 3;
+}
+
+function getUsedVillagers() {
+  let used = 0;
+  for (const k in game.jobs) used += game.jobs[k].assigned;
+  return used;
+}
+
+/* =========================
+   Production Tick
+   ========================= */
+
+function tickOnce(deltaSeconds = 1) {
+  // Farmers → Harvest
+  produce("farmer", "farm", "harvest", 1 * deltaSeconds);
+
+  // Lumberjacks → Wood
+  produce("lumberjack", "woodcutter", "wood", 1 * deltaSeconds);
+
+  // Miners → Ore
+  produce("miner", "mine", "ore", 1 * deltaSeconds);
+
+  // Smelters → Bars
+  refine("smelter", "smelter", "ore", "bars", 2, 0.5 * deltaSeconds);
+
+  // Carpenters → Planks
+  refine("carpenter", "carpenter", "wood", "planks", 2, 0.5 * deltaSeconds);
+
+  // Master Farmer → Food
+  refineMasterFarmer("masterFarmer", "kitchen", "harvest", "food", 2, 0.5 * deltaSeconds);
+
+  // Passive gold trickle
+  game.resources.gold += 0.01 * deltaSeconds;
+
+  handleCombat(deltaSeconds);
+}
+
+function produce(jobKey, buildingKey, resource, baseRate) {
+  const level = game.buildings[buildingKey].level;
+  const max = getBuildingMaxWorkers(level);
+  const assigned = Math.min(game.jobs[jobKey].assigned, max);
+  const mult = getBuildingProductionMultiplier(level);
+  let rate = baseRate * mult;
+  if (jobKey === "lumberjack" || jobKey === "miner") {
+    if (game.tech.sturdyCarts.bought) rate *= 1.25;
+  }
+  game.resources[resource] += assigned * rate;
+}
+
+function refine(jobKey, buildingKey, input, output, inputPerOutput, baseRate) {
+  const level = game.buildings[buildingKey].level;
+  const max = getBuildingMaxWorkers(level);
+  const assigned = Math.min(game.jobs[jobKey].assigned, max);
+  const mult = getBuildingProductionMultiplier(level);
+  const potential = assigned * baseRate * mult;
+  const actual = Math.min(potential, (game.resources[input] || 0) / inputPerOutput);
+  game.resources[input] -= actual * inputPerOutput;
+  game.resources[output] += actual;
+}
+
+function refineMasterFarmer(jobKey, buildingKey, input, output, inputPerOutput, baseRate) {
+  const level = game.buildings[buildingKey].level;
+  const max = getBuildingMaxWorkers(level);
+  const assigned = Math.min(game.jobs[jobKey].assigned, max);
+  let mult = getBuildingProductionMultiplier(level);
+  if (game.tech.ironStoves.bought) mult *= 1.5;
+  const potential = assigned * baseRate * mult;
+  const actual = Math.min(potential, (game.resources[input] || 0) / inputPerOutput);
+  game.resources[input] -= actual * inputPerOutput;
+  game.resources[output] += actual;
+}
+
+/* =========================
+   Combat
+   ========================= */
+
+function handleCombat(deltaSeconds) {
+  if (!game.combat.active) return;
+  game.combat.active.remaining -= deltaSeconds;
+  if (game.combat.active.remaining <= 0) {
+    const zone = game.combat.zones.find(z => z.id === game.combat.active.zoneId);
+    if (zone) {
+      for (const r in zone.reward) {
+        game.resources[r] = (game.resources[r] || 0) + zone.reward[r];
+      }
+    }
+    game.combat.active = null;
+  }
+}
+
+function startCombat(zoneId) {
+  if (game.combat.active) return;
+  const zone = game.combat.zones.find(z => z.id === zoneId);
+  if (!zone) return;
+  if (!canAfford(zone.req)) {
+    flashSaveStatus("Not enough resources for expedition", true);
+    return;
+  }
+  payCost(zone.req);
+  game.combat.active = { zoneId: zoneId, remaining: zone.time };
+}
+
+/* =========================
+   Tech Tree
+   ========================= */
+
+function buyTech(key) {
+  const t = game.tech[key];
+  if (!t || t.bought) return;
+  if (!canAfford(t.cost)) {
+    flashSaveStatus("Not enough resources for upgrade", true);
+    return;
+  }
+  payCost(t.cost);
+  t.bought = true;
+}
+
+/* =========================
+   UI Rendering
+   ========================= */
+
+function updateUI() {
+  updateResourcesUI();
+  updateBuildingsUI();
+  updateJobsUI();
+  updateHousingUI();
+  updateCombatUI();
+  updateTechUI();
+}
+
+function updateResourcesUI() {
+  const tbody = document.getElementById("resourceTable");
+  tbody.innerHTML = "";
+  const names = {
+    harvest: "🌾 Harvest",
+    food: "🍲 Food",
+    wood: "🌲 Wood",
+    planks: "🪵 Planks",
+    ore: "⛏️ Ore",
+    bars: "🔩 Bars",
+    gold: "🪙 Gold"
+  };
+  for (const key in game.resources) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${names[key]}</td><td>${game.resources[key].toFixed(1)}</td>`;
+    tbody.appendChild(tr);
+  }
+}
+
+function updateBuildingsUI() {
+  const tbody = document.getElementById("buildingTable");
+  tbody.innerHTML = "";
+  for (const key in game.buildings) {
+    const b = game.buildings[key];
+    const cost = getBuildingLevelCost(key);
+    const locked = isBuildingLocked(key);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${b.name} ${locked ? '<span class="tag">Locked</span>' : ''}</td>
+      <td>${b.level}</td>
+      <td>
+        <button onclick="levelUpBuilding('${key}')" ${locked ? "disabled" : ""}>
+          Level Up (${formatCost(cost)})
+        </button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+function isBuildingLocked(key) {
+  if (key === "smelter") return game.resources.ore < 10;
+  if (key === "carpenter") return game.resources.wood < 20;
+  if (key === "kitchen") return game.resources.harvest < 20;
+  return false;
+}
+
+function updateJobsUI() {
+  const tbody = document.getElementById("jobTable");
+  tbody.innerHTML = "";
+
+  const map = {
+    farmer: "farm",
+    lumberjack: "woodcutter",
+    miner: "mine",
+    smelter: "smelter",
+    carpenter: "carpenter",
+    masterFarmer: "kitchen"
+  };
+
+  const maxVillagers = getMaxVillagers();
+  const usedVillagers = getUsedVillagers();
+
+  for (const key in game.jobs) {
+    const job = game.jobs[key];
+    const building = game.buildings[map[key]];
+    const maxWorkers = getBuildingMaxWorkers(building.level);
+    const locked = building.level <= 0;
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="${locked ? 'locked' : ''}">${job.name}</td>
+      <td>${job.assigned}</td>
+      <td>${maxWorkers}</td>
+      <td>
+        <button onclick="assignJob('${key}', -1)" ${job.assigned <= 0 ? "disabled" : ""}>-</button>
+        <button onclick="assignJob('${key}', 1)" ${(locked || usedVillagers >= maxVillagers || job.assigned >= maxWorkers) ? "disabled" : ""}>+</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  document.getElementById("villagersUsed").textContent = usedVillagers;
+  document.getElementById("villagersMax").textContent = maxVillagers;
+}
+
+function updateHousingUI() {
+  document.getElementById("housingLevel").textContent = game.housing.level;
+  const cost = getHousingCost();
+  document.getElementById("housingCostText").textContent = "Cost: " + formatCost(cost);
+}
+
+function updateCombatUI() {
+  const tbody = document.getElementById("combatTable");
+  tbody.innerHTML = "";
+  const info = document.getElementById("combatInfo");
+
+  if (game.combat.active) {
+    const zone = game.combat.zones.find(z => z.id === game.combat.active.zoneId);
+    info.textContent = `Expedition in progress: ${zone.name} (${Math.max(0, game.combat.active.remaining).toFixed(1)}s left)`;
+  } else {
+    info.textContent = "No active expedition.";
+  }
+
+  for (const z of game.combat.zones) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${z.name}</td>
+      <td>${formatCost(z.req)}</td>
+      <td>${formatCost(z.reward)}</td>
+      <td>
+        <button onclick="startCombat('${z.id}')" ${game.combat.active ? "disabled" : ""}>
+          Send
+        </button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+function updateTechUI() {
+  const tbody = document.getElementById("techTable");
+  tbody.innerHTML = "";
+
+  for (const key in game.tech) {
+    const t = game.tech[key];
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${t.name}<div class="small">${t.desc}</div></td>
+      <td>${formatCost(t.cost)}</td>
+      <td>
+        <button onclick="buyTech('${key}')" ${t.bought ? "disabled" : ""}>
+          ${t.bought ? "Bought" : "Buy"}
+        </button>
+      </td>
+    `;
+
+    tbody.appendChild(tr);
+  }
+}
+
+/* =========================
+   Cost Formatting (with icons)
+   ========================= */
+
+function formatCost(cost) {
+  const icons = {
+    harvest: "🌾",
+    food: "🍲",
+    wood: "🌲",
+    planks: "🪵",
+    ore: "⛏️",
+    bars: "🔩",
+    gold: "🪙"
+  };
+
+  return Object.entries(cost)
+    .map(([k, v]) => `${icons[k] || ""} ${v}`)
+    .join(", ");
+}
+
+/* =========================
+   Job & Building Actions
+   ========================= */
+
+function assignJob(jobKey, delta) {
+  const job = game.jobs[jobKey];
+  const maxVillagers = getMaxVillagers();
+  const usedVillagers = getUsedVillagers();
+
+  if (delta > 0) {
+    if (usedVillagers >= maxVillagers) return;
+    job.assigned++;
+  } else if (delta < 0) {
+    if (job.assigned > 0) job.assigned--;
+  }
+
+  updateUI();
+}
+
+function levelUpBuilding(key) {
+  if (isBuildingLocked(key)) {
+    flashSaveStatus("Building is locked", true);
+    return;
+  }
+
+  const cost = getBuildingLevelCost(key);
+  if (!canAfford(cost)) {
+    flashSaveStatus("Not enough resources", true);
+    return;
+  }
+
+  payCost(cost);
+  game.buildings[key].level++;
+  updateUI();
+}
+
+function upgradeHousing() {
+  const cost = getHousingCost();
+  if (!canAfford(cost)) {
+    flashSaveStatus("Not enough resources for housing", true);
+    return;
+  }
+
+  payCost(cost);
+  game.housing.level++;
+  updateUI();
+}
+
+/* =========================
+   Save / Load System
+   ========================= */
+
+const SAVE_KEY = "medieval_idle_save_v4";
+
+function saveGame() {
+  game.lastTick = Date.now();
+  localStorage.setItem(SAVE_KEY, JSON.stringify(game));
+}
+
+function loadGame() {
+  const data = localStorage.getItem(SAVE_KEY);
+  if (!data) return;
+
+  try {
+    const parsed = JSON.parse(data);
+
+    Object.assign(game.resources, parsed.resources || {});
+    Object.assign(game.jobs, parsed.jobs || {});
+    Object.assign(game.buildings, parsed.buildings || {});
+    Object.assign(game.housing, parsed.housing || {});
+    Object.assign(game.tech, parsed.tech || {});
+    game.combat = parsed.combat || game.combat;
+
+    game.lastTick = parsed.lastTick || Date.now();
+
+    handleOfflineProgress();
+    updateUI();
+  } catch (e) {
+    console.error("Load failed:", e);
+  }
+}
+
+function wipeSave() {
+  localStorage.removeItem(SAVE_KEY);
+  flashSaveStatus("Save wiped");
+}
+
+function flashSaveStatus(msg, error = false) {
+  const el = document.getElementById("saveStatus");
+  el.textContent = msg;
+  el.style.color = error ? "#f88" : "#8f8";
+  setTimeout(() => el.textContent = "", 3000);
+}
+
+/* =========================
+   Offline Progress
+   ========================= */
+
+function handleOfflineProgress() {
+  const now = Date.now();
+  const diffMs = now - (game.lastTick || now);
+  const diffSec = Math.max(0, diffMs / 1000);
+  const capped = Math.min(diffSec, 3600); // 1 hour cap
+
+  if (capped > 1) {
+    for (let i = 0; i < capped; i++) tickOnce(1);
+    document.getElementById("offlineInfo").textContent =
+      `You were away for ${diffSec.toFixed(0)}s. Simulated ${capped}s of offline progress.`;
+  } else {
+    document.getElementById("offlineInfo").textContent = "";
+  }
+}
+
+/* =========================
+   Init & Game Loop
+   ========================= */
+
+document.getElementById("saveBtn").onclick = () => {
+  saveGame();
+  flashSaveStatus("Game saved");
+};
+
+document.getElementById("loadBtn").onclick = () => {
+  loadGame();
+  flashSaveStatus("Game loaded");
+};
+
+document.getElementById("wipeBtn").onclick = wipeSave;
+document.getElementById("upgradeHousingBtn").onclick = upgradeHousing;
+
+loadGame(); // Auto-load on startup
+updateUI();
+
+// Main loop — autosaves every tick
+setInterval(() => {
+  const now = Date.now();
+  const deltaSec = (now - game.lastTick) / 1000;
+  game.lastTick = now;
+
+  tickOnce(deltaSec);
+  updateUI();
+  saveGame(); // Autosave every tick
+}, game.tickIntervalMs);
+
+</script>
+
+</body>
+</html>
