@@ -2,84 +2,124 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>ShylentKnight's Origin Market Database</title>
+    <title>Live Origins Market Tracker</title>
     <style>
-        :root { --habbo-blue: #2980b9; --gold: #f1c40f; }
+        :root { --gold: #f1c40f; --hc-blue: #2980b9; --dino-green: #27ae60; --dark: #2c3e50; }
         body { font-family: 'Tahoma', sans-serif; background: #f4f7f6; padding: 20px; }
-        .controls { display: flex; gap: 10px; margin-bottom: 20px; }
-        select, input { padding: 10px; border-radius: 5px; border: 1px solid #ccc; flex-grow: 1; }
         
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        .stall { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #ddd; }
-        .owner-header { background: #2c3e50; color: white; padding: 12px; font-weight: bold; border-bottom: 4px solid var(--gold); }
+        /* Controls */
+        .controls { display: flex; gap: 10px; margin-bottom: 20px; max-width: 1000px; margin-left: auto; margin-right: auto;}
+        input, select { padding: 12px; border-radius: 8px; border: 1px solid #ccc; outline: none; }
+        .search-input { flex-grow: 2; }
+
+        /* Grid & Cards */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+        .stall { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #ddd; }
+        .owner-header { background: var(--dark); color: white; padding: 15px; font-weight: bold; border-bottom: 4px solid var(--gold); }
         
-        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-bottom: 1px solid #eee; }
-        .cat-badge { font-size: 0.6em; padding: 2px 5px; border-radius: 3px; text-transform: uppercase; margin-right: 5px; vertical-align: middle; background: #eee; color: #666; }
-        .cat-Rare { background: #fdf2d0; color: #d4ac0d; border: 1px solid #f1c40f; }
-        .cat-HC { background: #d6eaf8; color: #2e86c1; }
+        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #eee; }
         
-        .price { color: var(--habbo-blue); font-weight: bold; }
-        .time-badge { font-size: 0.75em; color: #888; padding: 10px; text-align: right; background: #fafafa; }
+        /* Price Styling */
+        .price-box { font-weight: bold; display: flex; align-items: center; gap: 5px; }
+        .currency-c { color: #b7950b; }   /* Credits */
+        .currency-hc { color: var(--hc-blue); } /* HC Sofas */
+        .currency-dino { color: var(--dino-green); } /* Dinos */
+        
+        .trend-up { color: #e74c3c; font-size: 0.8em; }   /* Price went up (Red) */
+        .trend-down { color: #27ae60; font-size: 0.8em; } /* Price went down (Green - Good for buyers!) */
+        
+        .cat-badge { font-size: 0.65em; padding: 2px 6px; border-radius: 4px; background: #eee; margin-right: 8px; color: #555; border: 1px solid #ccc; }
+        .footer-info { font-size: 0.7em; color: #999; padding: 10px; text-align: right; background: #fafafa; }
     </style>
 </head>
 <body>
-    <h1>🏨 Origins Stall Tracker</h1>
-    
-    <div class="controls">
-        <input type="text" id="search" placeholder="Search item or user..." onkeyup="render()">
-        <select id="filterCat" onchange="render()">
-            <option value="All">All Categories</option>
-            <option value="Rare">💎 Rares Only</option>
-            <option value="Norm">📦 Norms Only</option>
-            <option value="HC">🎩 HC Items Only</option>
-        </select>
-    </div>
 
-    <div id="grid" class="grid">Syncing with Hotel...</div>
+<div class="controls">
+    <input type="text" id="search" class="search-input" placeholder="Search item or username..." onkeyup="render()">
+    <select id="filterCat" onchange="render()">
+        <option value="All">All Items</option>
+        <option value="Rare">Rares</option>
+        <option value="HC">HC Items</option>
+        <option value="Norm">Norms</option>
+    </select>
+</div>
 
-    <script>
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwq32yAUQKeOpG8a5GQuVXqQ7iO9z_3ZodgWFdP-wgtdf6TnSnQfM1TBbQvR4EJvWhp/exec'; 
-        let cachedData = [];
+<div id="grid" class="grid">Loading Market Data...</div>
 
-        async function loadData() {
-            const response = await fetch(WEB_APP_URL);
-            cachedData = await response.json();
-            render();
-        }
+<script>
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwq32yAUQKeOpG8a5GQuVXqQ7iO9z_3ZodgWFdP-wgtdf6TnSnQfM1TBbQvR4EJvWhp/exec';
+    let marketData = [];
 
-        function render() {
-            const searchTerm = document.getElementById('search').value.toLowerCase();
-            const catFilter = document.getElementById('filterCat').value;
-            const grid = document.getElementById('grid');
-            grid.innerHTML = '';
+    async function fetchData() {
+        const response = await fetch(WEB_APP_URL);
+        marketData = await response.json();
+        render();
+    }
 
-            const grouped = {};
-            cachedData.forEach(row => {
-                const [owner, item, price, time, cat] = row;
-                if (catFilter !== "All" && cat !== catFilter) return;
-                if (searchTerm && !owner.toLowerCase().includes(searchTerm) && !item.toLowerCase().includes(searchTerm)) return;
+    function getTrend(itemName, currentPrice, currentIndex) {
+        // Find the previous record of this same item
+        const previousRecord = marketData.slice(currentIndex + 1).find(r => r[1].toLowerCase() === itemName.toLowerCase());
+        if (!previousRecord) return "";
 
-                if(!grouped[owner]) grouped[owner] = { items: [], lastUpdated: time };
-                grouped[owner].items.push({ name: item, price, cat });
-            });
+        const prevPriceVal = parseFloat(previousRecord[2]);
+        const currPriceVal = parseFloat(currentPrice);
 
-            for(const owner in grouped) {
-                let itemsHtml = grouped[owner].items.map(x => `
+        if (currPriceVal > prevPriceVal) return '<span class="trend-up">▲</span>';
+        if (currPriceVal < prevPriceVal) return '<span class="trend-down">▼</span>';
+        return "";
+    }
+
+    function getCurrencyClass(priceStr) {
+        const p = priceStr.toLowerCase();
+        if (p.includes('hc')) return 'currency-hc';
+        if (p.includes('dino')) return 'currency-dino';
+        return 'currency-c';
+    }
+
+    function render() {
+        const search = document.getElementById('search').value.toLowerCase();
+        const catFilter = document.getElementById('filterCat').value;
+        const grid = document.getElementById('grid');
+        grid.innerHTML = '';
+
+        const stalls = {};
+
+        marketData.forEach((row, index) => {
+            const [owner, item, price, time, cat] = row;
+            if (catFilter !== "All" && cat !== catFilter) return;
+            if (search && !owner.toLowerCase().includes(search) && !item.toLowerCase().includes(search)) return;
+
+            if (!stalls[owner]) stalls[owner] = { items: [], time: time };
+            
+            // Limit to 9 items per stall
+            if (stalls[owner].items.length < 9) {
+                const trend = getTrend(item, price, index);
+                const curClass = getCurrencyClass(price.toString());
+                
+                stalls[owner].items.push(`
                     <div class="item-row">
-                        <span><span class="cat-badge cat-${x.cat}">${x.cat}</span>${x.name}</span>
-                        <span class="price">${x.price}c</span>
-                    </div>`).join('');
-
-                grid.innerHTML += `
-                    <div class="stall">
-                        <div class="owner-header">👤 ${owner}</div>
-                        <div class="item-list">${itemsHtml}</div>
-                    </div>`;
+                        <span><span class="cat-badge">${cat}</span>${item}</span>
+                        <div class="price-box ${curClass}">
+                            ${trend} ${price}
+                        </div>
+                    </div>
+                `);
             }
-        }
+        });
 
-        loadData();
-        setInterval(loadData, 60000);
-    </script>
+        for (const owner in stalls) {
+            grid.innerHTML += `
+                <div class="stall">
+                    <div class="owner-header">👤 ${owner}</div>
+                    <div>${stalls[owner].items.join('')}</div>
+                    <div class="footer-info">Last update detected in this stall</div>
+                </div>
+            `;
+        }
+    }
+
+    fetchData();
+    setInterval(fetchData, 60000);
+</script>
 </body>
 </html>
