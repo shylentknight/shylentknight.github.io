@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Live Stall Directory</title>
+    <style>
+        :root { --habbo-blue: #2980b9; --gold: #f1c40f; }
+        body { font-family: 'Tahoma', sans-serif; background: #f4f7f6; padding: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .stall { background: white; padding: 0; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #ddd; }
+        .owner-header { background: #2c3e50; color: white; padding: 12px; font-weight: bold; font-size: 1.1em; border-bottom: 4px solid var(--gold); }
+        .item-list { padding: 10px; }
+        .item-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+        .price { color: var(--habbo-blue); font-weight: bold; }
+        .time-badge { font-size: 0.75em; color: #888; padding: 10px; text-align: right; background: #fafafa; border-top: 1px solid #eee; }
+        .fresh { color: #27ae60; font-weight: bold; } /* For items added in the last hour */
+    </style>
+</head>
+<body>
+    <h1>🏨 Live Origins Stall Tracker</h1>
+    <div id="grid" class="grid">Syncing with Hotel...</div>
+
+    <script>
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz8zW--t9s2sWY1X3QaXdPhGWNL4J9kwzeOLhR75IGZhJDhHQLM1ZMujAdEX5Ty6CZD/exec'; 
+
+        function timeAgo(dateString) {
+            const now = new Date();
+            const past = new Date(dateString);
+            const diffInMs = now - past;
+            const diffInMins = Math.floor(diffInMs / 60000);
+            
+            if (diffInMins < 1) return "Just now";
+            if (diffInMins < 60) return `<span class="fresh">${diffInMins}m ago</span>`;
+            if (diffInMins < 1440) return Math.floor(diffInMins / 60) + "h ago";
+            return Math.floor(diffInMins / 1440) + "d ago";
+        }
+
+        async function loadData() {
+            try {
+                const response = await fetch(WEB_APP_URL);
+                const rawData = await response.json();
+                
+                const grouped = {};
+                rawData.forEach(row => {
+                    if(!grouped[row[0]]) grouped[row[0]] = { items: [], lastUpdated: row[3] };
+                    grouped[row[0]].items.push({ name: row[1], price: row[2] });
+                    // Keep track of the most recent item time for the stall
+                    if (new Date(row[3]) > new Date(grouped[row[0]].lastUpdated)) {
+                        grouped[row[0]].lastUpdated = row[3];
+                    }
+                });
+
+                const grid = document.getElementById('grid');
+                grid.innerHTML = '';
+                
+                for(const owner in grouped) {
+                    let itemsHtml = grouped[owner].items.map(x => `
+                        <div class="item-row">
+                            <span>${x.name}</span>
+                            <span class="price">${x.price}c</span>
+                        </div>`).join('');
+
+                    grid.innerHTML += `
+                        <div class="stall">
+                            <div class="owner-header">👤 ${owner}</div>
+                            <div class="item-list">${itemsHtml}</div>
+                            <div class="time-badge">Seen: ${timeAgo(grouped[owner].lastUpdated)}</div>
+                        </div>`;
+                }
+            } catch (e) {
+                document.getElementById('grid').innerText = "Error loading data. Check URL.";
+            }
+        }
+        
+        loadData();
+        setInterval(loadData, 60000); // Auto-refresh every minute
+    </script>
+</body>
+</html>
