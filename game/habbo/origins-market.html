@@ -2,78 +2,84 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Live Stall Directory</title>
+    <title>ShylentKnight's Origin Market Database</title>
     <style>
         :root { --habbo-blue: #2980b9; --gold: #f1c40f; }
         body { font-family: 'Tahoma', sans-serif; background: #f4f7f6; padding: 20px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        .stall { background: white; padding: 0; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #ddd; }
-        .owner-header { background: #2c3e50; color: white; padding: 12px; font-weight: bold; font-size: 1.1em; border-bottom: 4px solid var(--gold); }
-        .item-list { padding: 10px; }
-        .item-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+        .controls { display: flex; gap: 10px; margin-bottom: 20px; }
+        select, input { padding: 10px; border-radius: 5px; border: 1px solid #ccc; flex-grow: 1; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .stall { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #ddd; }
+        .owner-header { background: #2c3e50; color: white; padding: 12px; font-weight: bold; border-bottom: 4px solid var(--gold); }
+        
+        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; border-bottom: 1px solid #eee; }
+        .cat-badge { font-size: 0.6em; padding: 2px 5px; border-radius: 3px; text-transform: uppercase; margin-right: 5px; vertical-align: middle; background: #eee; color: #666; }
+        .cat-Rare { background: #fdf2d0; color: #d4ac0d; border: 1px solid #f1c40f; }
+        .cat-HC { background: #d6eaf8; color: #2e86c1; }
+        
         .price { color: var(--habbo-blue); font-weight: bold; }
-        .time-badge { font-size: 0.75em; color: #888; padding: 10px; text-align: right; background: #fafafa; border-top: 1px solid #eee; }
-        .fresh { color: #27ae60; font-weight: bold; } /* For items added in the last hour */
+        .time-badge { font-size: 0.75em; color: #888; padding: 10px; text-align: right; background: #fafafa; }
     </style>
 </head>
 <body>
-    <h1>🏨 Live Origins Stall Tracker</h1>
+    <h1>🏨 Origins Stall Tracker</h1>
+    
+    <div class="controls">
+        <input type="text" id="search" placeholder="Search item or user..." onkeyup="render()">
+        <select id="filterCat" onchange="render()">
+            <option value="All">All Categories</option>
+            <option value="Rare">💎 Rares Only</option>
+            <option value="Norm">📦 Norms Only</option>
+            <option value="HC">🎩 HC Items Only</option>
+        </select>
+    </div>
+
     <div id="grid" class="grid">Syncing with Hotel...</div>
 
     <script>
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwq32yAUQKeOpG8a5GQuVXqQ7iO9z_3ZodgWFdP-wgtdf6TnSnQfM1TBbQvR4EJvWhp/exec'; 
-
-        function timeAgo(dateString) {
-            const now = new Date();
-            const past = new Date(dateString);
-            const diffInMs = now - past;
-            const diffInMins = Math.floor(diffInMs / 60000);
-            
-            if (diffInMins < 1) return "Just now";
-            if (diffInMins < 60) return `<span class="fresh">${diffInMins}m ago</span>`;
-            if (diffInMins < 1440) return Math.floor(diffInMins / 60) + "h ago";
-            return Math.floor(diffInMins / 1440) + "d ago";
-        }
+        let cachedData = [];
 
         async function loadData() {
-            try {
-                const response = await fetch(WEB_APP_URL);
-                const rawData = await response.json();
-                
-                const grouped = {};
-                rawData.forEach(row => {
-                    if(!grouped[row[0]]) grouped[row[0]] = { items: [], lastUpdated: row[3] };
-                    grouped[row[0]].items.push({ name: row[1], price: row[2] });
-                    // Keep track of the most recent item time for the stall
-                    if (new Date(row[3]) > new Date(grouped[row[0]].lastUpdated)) {
-                        grouped[row[0]].lastUpdated = row[3];
-                    }
-                });
+            const response = await fetch(WEB_APP_URL);
+            cachedData = await response.json();
+            render();
+        }
 
-                const grid = document.getElementById('grid');
-                grid.innerHTML = '';
-                
-                for(const owner in grouped) {
-                    let itemsHtml = grouped[owner].items.map(x => `
-                        <div class="item-row">
-                            <span>${x.name}</span>
-                            <span class="price">${x.price}c</span>
-                        </div>`).join('');
+        function render() {
+            const searchTerm = document.getElementById('search').value.toLowerCase();
+            const catFilter = document.getElementById('filterCat').value;
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
 
-                    grid.innerHTML += `
-                        <div class="stall">
-                            <div class="owner-header">👤 ${owner}</div>
-                            <div class="item-list">${itemsHtml}</div>
-                            <div class="time-badge">Seen: ${timeAgo(grouped[owner].lastUpdated)}</div>
-                        </div>`;
-                }
-            } catch (e) {
-                document.getElementById('grid').innerText = "Error loading data. Check URL.";
+            const grouped = {};
+            cachedData.forEach(row => {
+                const [owner, item, price, time, cat] = row;
+                if (catFilter !== "All" && cat !== catFilter) return;
+                if (searchTerm && !owner.toLowerCase().includes(searchTerm) && !item.toLowerCase().includes(searchTerm)) return;
+
+                if(!grouped[owner]) grouped[owner] = { items: [], lastUpdated: time };
+                grouped[owner].items.push({ name: item, price, cat });
+            });
+
+            for(const owner in grouped) {
+                let itemsHtml = grouped[owner].items.map(x => `
+                    <div class="item-row">
+                        <span><span class="cat-badge cat-${x.cat}">${x.cat}</span>${x.name}</span>
+                        <span class="price">${x.price}c</span>
+                    </div>`).join('');
+
+                grid.innerHTML += `
+                    <div class="stall">
+                        <div class="owner-header">👤 ${owner}</div>
+                        <div class="item-list">${itemsHtml}</div>
+                    </div>`;
             }
         }
-        
+
         loadData();
-        setInterval(loadData, 60000); // Auto-refresh every minute
+        setInterval(loadData, 60000);
     </script>
 </body>
 </html>

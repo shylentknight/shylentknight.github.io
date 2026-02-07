@@ -1,44 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Stall Admin - Cloud Sync</title>
-    <style>
-        body { font-family: Tahoma; background: #2c3e50; color: white; padding: 40px; text-align: center; }
-        .box { background: #ecf0f1; color: #333; padding: 20px; border-radius: 8px; max-width: 400px; margin: auto; }
-        input { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; }
-        button { background: #27ae60; color: white; border: none; padding: 10px 20px; cursor: pointer; width: 95%; font-weight: bold; }
-    </style>
-</head>
-<body>
-    <div class="box">
-        <h2>Update Cloud Database</h2>
-        <input type="text" id="o" placeholder="Owner Name">
-        <input type="text" id="i" placeholder="Item Name">
-        <input type="number" id="p" placeholder="Price">
-        <button onclick="sendData()">Add to Global List</button>
-    </div>
+<div class="box">
+    <h2>Update Cloud Database</h2>
+    <input type="text" id="o" placeholder="Owner Name">
+    <input type="text" id="i" placeholder="Item Name">
+    <input type="number" id="p" placeholder="Price">
+    <select id="cat" style="width: 95%; padding: 10px; margin: 10px 0;">
+        <option value="Rare">💎 Rare</option>
+        <option value="Norm">📦 Norm</option>
+        <option value="HC">🎩 HC Item</option>
+        <option value="Bundle">🎁 Bundle</option>
+    </select>
+    <button onclick="sendData()">Add to Global List</button>
+</div>
 
-    <script>
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwq32yAUQKeOpG8a5GQuVXqQ7iO9z_3ZodgWFdP-wgtdf6TnSnQfM1TBbQvR4EJvWhp/exec'; // PASTE YOUR URL HERE
+<script>
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwq32yAUQKeOpG8a5GQuVXqQ7iO9z_3ZodgWFdP-wgtdf6TnSnQfM1TBbQvR4EJvWhp/exec'; 
 
-        async function sendData() {
-            const data = {
-                owner: document.getElementById('o').value,
-                item: document.getElementById('i').value,
-                price: document.getElementById('p').value
-            };
-
-            await fetch(WEB_APP_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(data)
-            });
-            
-            alert("Sent to Google Sheets!");
-            document.getElementById('i').value = '';
-            document.getElementById('p').value = '';
-        }
-    </script>
-</body>
-</html>
+    async function sendData() {
+        const data = {
+            owner: document.getElementById('o').value,
+            item: document.getElementById('i').value,
+            price: document.getElementById('p').value,
+            category: document.getElementById('cat').value
+        };
+        await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
+        alert("Added!");
+        document.getElementById('i').value = ''; 
+        document.getElementById('p').value = '';
+    }
+</script>
