@@ -16,24 +16,6 @@
     .cat-Norm { background: #95a5a6; color: #fff; }
 </style>
 
-<script>
-    // Inside your render function, when creating the category badge:
-    // We replace spaces with dashes for the CSS class (e.g., "Funky Friday" -> "cat-Funky-Friday")
-    const cssClass = x.cat.replace(/\s+/g, '-');
-    
-    // Example of the row generation:
-    let itemsHtml = stalls[owner].items.map(x => `
-        <div class="item-row">
-            <span>
-                <span class="cat-badge cat-${x.cat.replace(/\s+/g, '-')}">${x.cat}</span>
-                ${x.name}
-            </span>
-            <div>
-                <span class="price">${x.price}</span>
-                <button class="btn-del" onclick="deleteItem('${owner}', '${x.name}')">×</button>
-            </div>
-        </div>`).join('');
-</script>
 </head>
 <body>
 
@@ -101,32 +83,45 @@
         }
     }
 
-    async function loadData() {
-        const response = await fetch(WEB_APP_URL);
-        const rawData = await response.json();
-        const grid = document.getElementById('grid');
-        grid.innerHTML = '';
+async function loadData() {
+    const response = await fetch(WEB_APP_URL);
+    const rawData = await response.json();
+    const grid = document.getElementById('grid');
+    grid.innerHTML = '';
 
-        const stalls = {};
-        rawData.forEach(row => {
-            const [owner, item, price, time, cat] = row;
-            if(!stalls[owner]) stalls[owner] = [];
-            stalls[owner].push({item, price, cat});
-        });
+    const stalls = {};
+    rawData.forEach(row => {
+        // [0]=Owner, [1]=Item, [2]=Price, [3]=Time, [4]=Category
+        const [owner, item, price, time, cat] = row;
+        if(!stalls[owner]) stalls[owner] = [];
+        stalls[owner].push({item, price, cat});
+    });
 
-        for(const owner in stalls) {
-            let itemsHtml = stalls[owner].map(x => `
+    for(const owner in stalls) {
+        // --- START OF RENDER LOGIC ---
+        let itemsHtml = stalls[owner].map(x => {
+            
+            // This is the logic for the Category CSS class
+            // It turns "Funky Friday" into "Funky-Friday" so the CSS can read it
+            const categoryClass = x.cat ? x.cat.replace(/\s+/g, '-') : 'Rare';
+
+            return `
                 <div class="item-row">
-                    <span>${x.item} <br><small style="color:#999">${x.cat}</small></span>
+                    <span>
+                        <span class="cat-badge cat-${categoryClass}">${x.cat}</span>
+                        ${x.item}
+                    </span>
                     <div>
                         <span class="price">${x.price}</span>
-                        <button class="btn-del" onclick="deleteItem('${owner}', '${x.item}')">Remove</button>
+                        <button class="btn-del" onclick="deleteItem('${owner}', '${x.item}')">×</button>
                     </div>
-                </div>`).join('');
+                </div>`;
+        }).join('');
+        // --- END OF RENDER LOGIC ---
 
-            grid.innerHTML += `<div class="stall"><div class="owner-header">👤 ${owner}</div>${itemsHtml}</div>`;
-        }
+        grid.innerHTML += `<div class="stall"><div class="owner-header">👤 ${owner}</div>${itemsHtml}</div>`;
     }
+}
 
     loadData();
 </script>
