@@ -2,124 +2,118 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Live Origins Market Tracker</title>
+    <title>Habbo Origins Community Market</title>
     <style>
-        :root { --gold: #f1c40f; --hc-blue: #2980b9; --dino-green: #27ae60; --dark: #2c3e50; }
+        :root { --hc-blue: #2980b9; --gold: #f1c40f; --dark: #2c3e50; }
         body { font-family: 'Tahoma', sans-serif; background: #f4f7f6; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; }
         
-        /* Controls */
-        .controls { display: flex; gap: 10px; margin-bottom: 20px; max-width: 1000px; margin-left: auto; margin-right: auto;}
-        input, select { padding: 12px; border-radius: 8px; border: 1px solid #ccc; outline: none; }
-        .search-input { flex-grow: 2; }
+        /* Form Styling */
+        .add-box { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        .input-group { display: flex; flex-wrap: wrap; gap: 10px; }
+        input, select { padding: 10px; border: 1px solid #ccc; border-radius: 5px; flex: 1; min-width: 150px; }
+        .btn-add { background: #27ae60; color: white; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; border-radius: 5px; }
 
-        /* Grid & Cards */
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
-        .stall { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #ddd; }
-        .owner-header { background: var(--dark); color: white; padding: 15px; font-weight: bold; border-bottom: 4px solid var(--gold); }
+        /* Stall Grid */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .stall { background: white; border-radius: 10px; border: 1px solid #ddd; overflow: hidden; }
+        .owner-header { background: var(--dark); color: white; padding: 12px; font-weight: bold; display: flex; justify-content: space-between; }
+        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
+        .btn-del { background: #ff7675; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
         
-        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid #eee; }
-        
-        /* Price Styling */
-        .price-box { font-weight: bold; display: flex; align-items: center; gap: 5px; }
-        .currency-c { color: #b7950b; }   /* Credits */
-        .currency-hc { color: var(--hc-blue); } /* HC Sofas */
-        .currency-dino { color: var(--dino-green); } /* Dinos */
-        
-        .trend-up { color: #e74c3c; font-size: 0.8em; }   /* Price went up (Red) */
-        .trend-down { color: #27ae60; font-size: 0.8em; } /* Price went down (Green - Good for buyers!) */
-        
-        .cat-badge { font-size: 0.65em; padding: 2px 6px; border-radius: 4px; background: #eee; margin-right: 8px; color: #555; border: 1px solid #ccc; }
-        .footer-info { font-size: 0.7em; color: #999; padding: 10px; text-align: right; background: #fafafa; }
+        .price { font-weight: bold; color: var(--hc-blue); margin-right: 10px; }
     </style>
 </head>
 <body>
 
-<div class="controls">
-    <input type="text" id="search" class="search-input" placeholder="Search item or username..." onkeyup="render()">
-    <select id="filterCat" onchange="render()">
-        <option value="All">All Items</option>
-        <option value="Rare">Rares</option>
-        <option value="HC">HC Items</option>
-        <option value="Norm">Norms</option>
-    </select>
+<div class="container">
+    <div class="add-box">
+        <h3>➕ Add Your Item to the Market</h3>
+        <div class="input-group">
+            <input type="text" id="owner" placeholder="Your Habbo Name">
+            <input type="text" id="item" placeholder="Item Name">
+            <input type="text" id="price" placeholder="Price (e.g. 10c)">
+            <select id="cat">
+                <option value="Rare">💎 Rare</option>
+                <option value="HC">🎩 HC</option>
+                <option value="Norm">📦 Norm</option>
+            </select>
+            <input type="password" id="pin" placeholder="Set 4-Digit PIN">
+            <button class="btn-add" onclick="addItem()">Post Item</button>
+        </div>
+        <p style="font-size: 0.8em; color: #666;">*Remember your PIN! You'll need it to remove the item once sold.</p>
+    </div>
+
+    <div id="grid" class="grid">Loading items...</div>
 </div>
 
-<div id="grid" class="grid">Loading Market Data...</div>
-
 <script>
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwq32yAUQKeOpG8a5GQuVXqQ7iO9z_3ZodgWFdP-wgtdf6TnSnQfM1TBbQvR4EJvWhp/exec';
-    let marketData = [];
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwDKeuSW6fjOSART5Vy2PJTgt1ufdUIYi57Duugau6Lqb1dyVL-_Ca7aOssVyeOoPzF/exec';
 
-    async function fetchData() {
+    async function addItem() {
+        const data = {
+            owner: document.getElementById('owner').value,
+            item: document.getElementById('item').value,
+            price: document.getElementById('price').value,
+            category: document.getElementById('cat').value,
+            pin: document.getElementById('pin').value,
+            action: "add"
+        };
+        if(!data.owner || !data.item || !data.pin) return alert("Please fill in Name, Item, and PIN.");
+
+        await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
+        alert("Item Added!");
+        location.reload(); 
+    }
+
+    async function deleteItem(owner, item) {
+        const pin = prompt(`Enter PIN for ${owner}'s ${item} to remove it:`);
+        if(!pin) return;
+
+        const data = { action: "delete", owner, item, pin };
+        
+        const response = await fetch(WEB_APP_URL, { 
+            method: 'POST', 
+            body: JSON.stringify(data) 
+        });
+        const result = await response.text();
+        
+        if(result === "Deleted") {
+            alert("Item removed!");
+            location.reload();
+        } else {
+            alert("Incorrect PIN or error.");
+        }
+    }
+
+    async function loadData() {
         const response = await fetch(WEB_APP_URL);
-        marketData = await response.json();
-        render();
-    }
-
-    function getTrend(itemName, currentPrice, currentIndex) {
-        // Find the previous record of this same item
-        const previousRecord = marketData.slice(currentIndex + 1).find(r => r[1].toLowerCase() === itemName.toLowerCase());
-        if (!previousRecord) return "";
-
-        const prevPriceVal = parseFloat(previousRecord[2]);
-        const currPriceVal = parseFloat(currentPrice);
-
-        if (currPriceVal > prevPriceVal) return '<span class="trend-up">▲</span>';
-        if (currPriceVal < prevPriceVal) return '<span class="trend-down">▼</span>';
-        return "";
-    }
-
-    function getCurrencyClass(priceStr) {
-        const p = priceStr.toLowerCase();
-        if (p.includes('hc')) return 'currency-hc';
-        if (p.includes('dino')) return 'currency-dino';
-        return 'currency-c';
-    }
-
-    function render() {
-        const search = document.getElementById('search').value.toLowerCase();
-        const catFilter = document.getElementById('filterCat').value;
+        const rawData = await response.json();
         const grid = document.getElementById('grid');
         grid.innerHTML = '';
 
         const stalls = {};
-
-        marketData.forEach((row, index) => {
+        rawData.forEach(row => {
             const [owner, item, price, time, cat] = row;
-            if (catFilter !== "All" && cat !== catFilter) return;
-            if (search && !owner.toLowerCase().includes(search) && !item.toLowerCase().includes(search)) return;
-
-            if (!stalls[owner]) stalls[owner] = { items: [], time: time };
-            
-            // Limit to 9 items per stall
-            if (stalls[owner].items.length < 9) {
-                const trend = getTrend(item, price, index);
-                const curClass = getCurrencyClass(price.toString());
-                
-                stalls[owner].items.push(`
-                    <div class="item-row">
-                        <span><span class="cat-badge">${cat}</span>${item}</span>
-                        <div class="price-box ${curClass}">
-                            ${trend} ${price}
-                        </div>
-                    </div>
-                `);
-            }
+            if(!stalls[owner]) stalls[owner] = [];
+            stalls[owner].push({item, price, cat});
         });
 
-        for (const owner in stalls) {
-            grid.innerHTML += `
-                <div class="stall">
-                    <div class="owner-header">👤 ${owner}</div>
-                    <div>${stalls[owner].items.join('')}</div>
-                    <div class="footer-info">Last update detected in this stall</div>
-                </div>
-            `;
+        for(const owner in stalls) {
+            let itemsHtml = stalls[owner].map(x => `
+                <div class="item-row">
+                    <span>${x.item} <br><small style="color:#999">${x.cat}</small></span>
+                    <div>
+                        <span class="price">${x.price}</span>
+                        <button class="btn-del" onclick="deleteItem('${owner}', '${x.item}')">Remove</button>
+                    </div>
+                </div>`).join('');
+
+            grid.innerHTML += `<div class="stall"><div class="owner-header">👤 ${owner}</div>${itemsHtml}</div>`;
         }
     }
 
-    fetchData();
-    setInterval(fetchData, 60000);
+    loadData();
 </script>
 </body>
 </html>

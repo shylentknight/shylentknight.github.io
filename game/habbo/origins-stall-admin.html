@@ -2,29 +2,43 @@
     <h2>Update Cloud Database</h2>
     <input type="text" id="o" placeholder="Owner Name">
     <input type="text" id="i" placeholder="Item Name">
-    <input type="text" id="p" placeholder="Price (e.g. 10c or 5hc)">
-    <select id="cat" style="width: 95%; padding: 10px; margin: 10px 0;">
+    <input type="text" id="p" placeholder="Price (e.g. 10c or 2hc)"> <select id="cat" style="width: 95%; padding: 10px; margin: 10px 0;">
         <option value="Rare">💎 Rare</option>
-        <option value="Norm">📦 Norm</option>
         <option value="HC">🎩 HC Item</option>
+        <option value="Norm">📦 Norm</option>
         <option value="Bundle">🎁 Bundle</option>
     </select>
     <button onclick="sendData()">Add to Global List</button>
 </div>
 
 <script>
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwq32yAUQKeOpG8a5GQuVXqQ7iO9z_3ZodgWFdP-wgtdf6TnSnQfM1TBbQvR4EJvWhp/exec'; 
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyJ0tX-d9Q5xofRKRW9YcHFk_SemAGn30Whx5FD5fQvcXqT__KdAac4-uKgptGa-9wz/exec'; 
 
     async function sendData() {
+        const owner = document.getElementById('o').value;
+        const item = document.getElementById('i').value;
+        const price = document.getElementById('p').value;
+        const category = document.getElementById('cat').value;
+
+        if(!owner || !item || !price) return alert("Fill everything in!");
+
         const data = {
-            owner: document.getElementById('o').value,
-            item: document.getElementById('i').value,
-            price: document.getElementById('p').value,
-            category: document.getElementById('cat').value
+            owner: owner,
+            item: item,
+            price: price,
+            category: category // This is the key piece!
         };
-        await fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(data) });
-        alert("Added!");
-        document.getElementById('i').value = ''; 
+
+        // This sends the data to your Google Sheet
+        await fetch(WEB_APP_URL, {
+            method: 'POST',
+            mode: 'no-cors', // Essential for Google Scripts
+            body: JSON.stringify(data)
+        });
+        
+        alert("Sent to Sheet!");
+        // Clear item/price but keep owner for speed
+        document.getElementById('i').value = '';
         document.getElementById('p').value = '';
     }
 </script>
