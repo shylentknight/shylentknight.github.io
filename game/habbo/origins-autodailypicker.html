@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Habbo Origins Picker</title>
+<style>
+    body {
+        background: #0a0a0a;
+        color: #00ff88;
+        font-family: Consolas, monospace;
+        padding: 20px;
+        text-align: center;
+    }
+    h1 {
+        margin-bottom: 5px;
+    }
+    .box {
+        border: 1px solid #00ff88;
+        padding: 20px;
+        width: 400px;
+        margin: 20px auto;
+    }
+    button {
+        background: #00ff88;
+        color: #000;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        margin-top: 15px;
+    }
+    button:hover {
+        background: #00cc66;
+    }
+    .result {
+        font-size: 20px;
+        margin: 10px 0;
+    }
+</style>
+</head>
+<body>
+
+<h1>HABBO ORIGINS PICKER</h1>
+<div class="box">
+    <div id="suitcase" class="result"></div>
+    <div id="plates" class="result"></div>
+    <button onclick="generate()">Generate New Picks</button>
+</div>
+
+<script>
+    const suitcaseNames = ["Left", "Middle", "Right"];
+    const plateNames = [
+        "Top Left", "Top Middle", "Top Right",
+        "Middle Left", "Middle", "Middle Right",
+        "Bottom Left", "Bottom Middle", "Bottom Right"
+    ];
+
+    function generate() {
+        // Suitcase
+        const s = Math.floor(Math.random() * 3);
+        document.getElementById("suitcase").textContent =
+            "Suitcase Result: " + suitcaseNames[s];
+
+        // Plates
+        let chosen = [];
+        while (chosen.length < 3) {
+            let pick = Math.floor(Math.random() * 9);
+            if (!chosen.includes(pick)) chosen.push(pick);
+        }
+
+        let plateText = "Plates: " + chosen.map(i => plateNames[i]).join(", ");
+        document.getElementById("plates").textContent = plateText;
+    }
+
+    // Auto-run on page load
+    generate();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Neon Fragment Tracker</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>Neon Fragment Tracker</h1>
+
+<div class="top-controls">
+  <select id="themeSelect">
+    <option value="neon">Neon Red</option>
+    <option value="gold">Gold Prestige</option>
+    <option value="abyss">Abyss Black</option>
+  </select>
+
+  <button id="compactToggle">Compact Mode</button>
+</div>
+
+<div class="progress-bar-container">
+  <div class="progress-bar-fill" id="progressFill"></div>
+</div>
+<div class="progress-bar-text" id="progressText">0%</div>
+
+<div class="grid" id="grid"></div>
+
+<div class="button-row">
+  <button id="saveBtn">Save</button>
+  <button id="mergeBtn">Merge Complete Map (-1 All)</button>
+  <button id="resetBtn">Reset Completed Maps</button>
+</div>
+
+<div class="map-badge">
+  Completed Maps: <span id="mapCount">0</span>
+</div>
+
+<div class="panel">
+  <h2>Duplicates You Can Trade</h2>
+  <div id="dupeList" class="dupe-grid">None</div>
+</div>
+
+<div class="panel">
+  <h2>Missing Fragments</h2>
+  <div id="missingList" class="missing-grid">None</div>
+</div>
+
+<div class="panel">
+  <h2>Trade Suggestions</h2>
+  <div id="tradeList">None</div>
+</div>
+
+<audio id="mergeSound">
+  <source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=" type="audio/wav">
+</audio>
+
+<script src="script.js"></script>
+</body>
+</html>

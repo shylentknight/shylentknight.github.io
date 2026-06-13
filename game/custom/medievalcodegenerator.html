@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Ye Olde Verification Codex</title>
+<style>
+    body {
+        font-family: "Garamond", "Times New Roman", serif;
+        background: #f4ecd8;
+        padding: 30px;
+        max-width: 650px;
+        margin: auto;
+        margin-top: 20px;
+        border: 4px solid #5a3e1b;
+        box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    }
+
+    h2 {
+        font-size: 2rem;
+        text-align: center;
+        margin-bottom: 20px;
+        color: #3b2a14;
+        text-shadow: 1px 1px #d6c7a1;
+    }
+
+    button {
+        padding: 12px 24px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        background: #7a5c2e;
+        color: #f4ecd8;
+        border: 2px solid #3b2a14;
+        font-family: inherit;
+        margin-bottom: 20px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    button:hover {
+        background: #8b6a3a;
+    }
+
+    #code {
+        font-size: 3rem;
+        margin-top: 20px;
+        font-weight: bold;
+        text-align: center;
+        letter-spacing: 0.25em;
+        color: #3b2a14;
+    }
+
+    #timer {
+        text-align: center;
+        margin-top: 10px;
+        color: #5a3e1b;
+        font-style: italic;
+    }
+
+    .scroll-border {
+        border: 3px solid #3b2a14;
+        padding: 20px;
+        background: #fff8e6;
+        margin-top: 20px;
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+    }
+
+    #history {
+        margin-top: 20px;
+        padding-left: 20px;
+        color: #3b2a14;
+        font-size: 1.2rem;
+    }
+
+    .history-title {
+        font-weight: bold;
+        margin-bottom: 10px;
+        text-align: center;
+        font-size: 1.3rem;
+        color: #5a3e1b;
+    }
+</style>
+</head>
+<body>
+
+<h2>Ye Olde Verification Codex</h2>
+<div style="text-align:center; font-style:italic; color:#5a3e1b;">
+    A new sacred code shall arise every ten minutes
+</div>
+
+<button onclick="generate(true)">Summon Code Early</button>
+
+<div class="scroll-border">
+    <div id="code"></div>
+    <div id="timer"></div>
+</div>
+
+<div class="scroll-border">
+    <div class="history-title">Chronicles of Codes Past</div>
+    <div id="history"></div>
+</div>
+
+<script>
+let countdown;
+const INTERVAL = 600; // 10 minutes in seconds
+let history = [];
+
+function generate(resetTimer = false) {
+    const length = 10;
+    const code = Array.from({length}, () => Math.floor(Math.random() * 10)).join('');
+
+    document.getElementById("code").textContent = code;
+
+    // Add to history
+    history.unshift(code);
+    if (history.length > 5) history.pop(); // keep only last 5
+
+    updateHistory();
+
+    if (resetTimer) {
+        clearInterval(countdown);
+        startTimer();
+    }
+}
+
+function updateHistory() {
+    const historyDiv = document.getElementById("history");
+    historyDiv.innerHTML = history
+        .map((c, i) => `<div>${i + 1}. <strong>${c}</strong></div>`)
+        .join("");
+}
+
+function startTimer() {
+    let remaining = INTERVAL;
+
+    document.getElementById("timer").textContent =
+        "A new code shall arise in " + formatTime(remaining);
+
+    countdown = setInterval(() => {
+        remaining--;
+
+        if (remaining <= 0) {
+            generate(); // auto-generate new code
+            remaining = INTERVAL;
+        }
+
+        document.getElementById("timer").textContent =
+            "A new code shall arise in " + formatTime(remaining);
+
+    }, 1000);
+}
+
+function formatTime(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return m + "m " + s + "s";
+}
+
+// Start immediately
+generate(true);
+</script>
+
+</body>
+</html>

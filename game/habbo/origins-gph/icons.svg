@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Base Fragment Icon (Rune-style diamond) -->
+  <symbol id="fragment" viewBox="0 0 100 100">
+    <g fill="none" stroke="currentColor" stroke-width="8" stroke-linejoin="round">
+      <!-- Outer diamond -->
+      <polygon points="50,5 95,50 50,95 5,50" />
+
+      <!-- Inner rune lines -->
+      <line x1="50" y1="20" x2="50" y2="80" />
+      <line x1="20" y1="50" x2="80" y2="50" />
+      <line x1="30" y1="30" x2="70" y2="70" />
+      <line x1="70" y1="30" x2="30" y2="70" />
+    </g>
+  </symbol>
+
+</svg>

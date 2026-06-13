@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ultimate Game Timers</title>
+<style>
+/* CSS will be inserted in Part 2 */
+/* ===========================
+   THEME VARIABLES (default: red)
+   =========================== */
+:root {
+    --bg: #0a0000;
+    --fg: #ffd6d6;
+    --accent: #ff1a1a;
+    --accent-soft: #ff4d4d;
+    --accent-shadow: #ff1a1a55;
+    --card-bg: #1a0000;
+    --bar-grad-start: #ff1a1a;
+    --bar-grad-end: #ff6666;
+}
+
+/* ===========================
+   GLOBAL
+   =========================== */
+body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+    color: var(--accent-soft);
+    text-shadow: 0 0 12px var(--accent);
+    margin-bottom: 10px;
+}
+
+#statusLine {
+    text-align: center;
+    font-size: 0.85em;
+    opacity: 0.8;
+    margin-bottom: 10px;
+}
+
+/* ===========================
+   TOP BAR (Themes, Tabs, Toggles)
+   =========================== */
+#topBar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.pill-group {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.pill {
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--accent);
+    color: var(--fg);
+    background: transparent;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: 0.15s;
+}
+
+.pill.active {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 0 10px var(--accent);
+}
+
+/* ===========================
+   QUICK ADD BUTTONS
+   =========================== */
+#quickAdd {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.quick-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95em;
+    box-shadow: 0 0 10px var(--accent);
+    transition: 0.15s;
+}
+
+.quick-btn:hover {
+    filter: brightness(1.15);
+}
+
+/* ===========================
+   ADD FORM
+   =========================== */
+#addForm {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+input, select {
+    background: var(--card-bg);
+    color: var(--fg);
+    border: 1px solid var(--accent);
+    box-shadow: 0 0 8px var(--accent-shadow);
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 0.95em;
+}
+
+button {
+    background: var(--accent);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 0 10px var(--accent);
+    font-size: 0.95em;
+}
+
+button:hover {
+    filter: brightness(1.1);
+}
+
+/* ===========================
+   IMPORT BOX
+   =========================== */
+#importBox {
+    max-width: 700px;
+    margin: 0 auto 20px auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#importText {
+    width: 100%;
+    height: 90px;
+    background: var(--card-bg);
+    border: 1px solid var(--accent);
+    box-shadow: 0 0 10px var(--accent-shadow);
+    color: var(--fg);
+    padding: 10px;
+    border-radius: 6px;
+    resize: vertical;
+}
+
+/* ===========================
+   EVENT LIST
+   =========================== */
+#events {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.event {
+    background: var(--card-bg);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    padding: 12px;
+    margin: 10px auto;
+    box-shadow: 0 0 12px var(--accent-shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: 0.2s;
+}
+
+.wide .event {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.event-main {
+    flex: 1;
+    min-width: 200px;
+}
+
+.event-name {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: var(--accent-soft);
+    text-shadow: 0 0 6px var(--accent);
+}
+
+.event-meta {
+    font-size: 0.85em;
+    opacity: 0.8;
+}
+
+.countdown {
+    margin-top: 4px;
+    font-size: 0.95em;
+}
+
+/* ===========================
+   PROGRESS BAR
+   =========================== */
+.bar-container {
+    margin-top: 6px;
+    background: #050505;
+    border-radius: 6px;
+    height: 8px;
+    overflow: hidden;
+    border: 1px solid var(--accent-shadow);
+}
+
+.bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--bar-grad-start), var(--bar-grad-end));
+    box-shadow: 0 0 8px var(--accent);
+    width: 0%;
+    transition: width 0.5s linear;
+}
+
+/* ===========================
+   EVENT ACTIONS
+   =========================== */
+.event-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+    margin-top: 6px;
+    justify-content: flex-end;
+}
+
+.remove-btn {
+    background: #cc0000;
+    box-shadow: 0 0 8px #cc0000;
+}
+
+.tag {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 999px;
+    border: 1px solid var(--accent);
+    font-size: 0.75em;
+    opacity: 0.9;
+}
+
+/* ===========================
+   RESPONSIVE
+   =========================== */
+@media (max-width: 600px) {
+    .wide .event {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+</style>
+</head>
+<body>
+
+<h1>🔥 Ultimate Game Event Timers</h1>
+<div id="statusLine"></div>
+
+<!-- Theme / Layout / Sound / Tabs -->
+<div id="topBar">
+
+    <div class="pill-group" id="themeGroup">
+        <span class="pill active" data-theme="red">Red</span>
+        <span class="pill" data-theme="black">Black</span>
+        <span class="pill" data-theme="gold">Gold</span>
+    </div>
+
+    <div class="pill-group" id="tabGroup">
+        <span class="pill active" data-tab="daily">Daily</span>
+        <span class="pill" data-tab="weekly">Weekly</span>
+    </div>
+
+    <div class="pill-group">
+        <span class="pill" id="layoutToggle">Wide layout: OFF</span>
+        <span class="pill" id="soundToggle">Sound: OFF</span>
+    </div>
+
+    <div class="pill-group">
+        <span class="pill" id="resetInfo">Server reset: 0h offset</span>
+    </div>
+
+</div>
+
+<!-- Quick Add Buttons -->
+<div id="quickAdd">
+    <button class="quick-btn" data-type="boss">⚔️ Boss</button>
+    <button class="quick-btn" data-type="shop">🛒 Shop</button>
+    <button class="quick-btn" data-type="raid">🔥 Raid</button>
+    <button class="quick-btn" data-type="daily">🎮 Daily</button>
+    <button class="quick-btn" data-type="weekly">⭐ Weekly</button>
+</div>
+
+<!-- Add Event Form -->
+<div id="addForm">
+    <input type="text" id="eventName" placeholder="Event name">
+    <input type="time" id="eventTime">
+    <select id="eventDay" style="display:none;">
+        <option value="0">Sunday</option>
+        <option value="1">Monday</option>
+        <option value="2">Tuesday</option>
+        <option value="3">Wednesday</option>
+        <option value="4">Thursday</option>
+        <option value="5">Friday</option>
+        <option value="6">Saturday</option>
+    </select>
+    <input type="number" id="resetOffset" style="width:90px;" value="0" title="Server reset offset in hours" />
+    <button id="addBtn">Add</button>
+</div>
+
+<!-- Import Box -->
+<div id="importBox">
+    <textarea id="importText" placeholder="Paste events here, e.g.:
+Daily: Shop @ 00:00
+Weekly: Boss @ Friday 19:00
+Raid @ 18:00"></textarea>
+    <button id="importBtn">Import</button>
+</div>
+
+<!-- Event List -->
+<div id="events"></div>
+
+<!-- Sound -->
+<audio id="ding">
+    <source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAIlYAAESsAAACABAAZGF0YQAAAAA=" type="audio/wav">
+</audio>
+
+<script>
+/* JavaScript will be inserted in Part 3 */
+/* ===========================
+   SETTINGS + DATA
+   =========================== */
+let currentTheme = 'red';
+let currentTab = 'daily';
+let layoutWide = false;
+let soundOn = false;
+let resetOffsetHours = 0;
+
+const eventsData = {
+    daily: JSON.parse(localStorage.getItem("ultimate_daily") || "[]"),
+    weekly: JSON.parse(localStorage.getItem("ultimate_weekly") || "[]")
+};
+
+const categoryIcons = {
+    boss: "⚔️",
+    shop: "🛒",
+    raid: "🔥",
+    daily: "🎮",
+    weekly: "⭐"
+};
+
+const categoryNames = {
+    boss: "Boss",
+    shop: "Shop",
+    raid: "Raid",
+    daily: "Daily",
+    weekly: "Weekly"
+};
+
+/* ===========================
+   SAVE / LOAD SETTINGS
+   =========================== */
+function save() {
+    localStorage.setItem("ultimate_daily", JSON.stringify(eventsData.daily));
+    localStorage.setItem("ultimate_weekly", JSON.stringify(eventsData.weekly));
+    localStorage.setItem("ultimate_settings", JSON.stringify({
+        theme: currentTheme,
+        layoutWide,
+        soundOn,
+        resetOffsetHours
+    }));
+}
+
+function loadSettings() {
+    const s = JSON.parse(localStorage.getItem("ultimate_settings") || "null");
+    if (!s) return;
+    currentTheme = s.theme || 'red';
+    layoutWide = !!s.layoutWide;
+    soundOn = !!s.soundOn;
+    resetOffsetHours = s.resetOffsetHours || 0;
+}
+
+/* ===========================
+   THEME SWITCHING
+   =========================== */
+function applyTheme(theme) {
+    const root = document.documentElement;
+
+    if (theme === 'red') {
+        root.style.setProperty('--bg', '#0a0000');
+        root.style.setProperty('--fg', '#ffd6d6');
+        root.style.setProperty('--accent', '#ff1a1a');
+        root.style.setProperty('--accent-soft', '#ff4d4d');
+        root.style.setProperty('--accent-shadow', '#ff1a1a55');
+        root.style.setProperty('--card-bg', '#1a0000');
+        root.style.setProperty('--bar-grad-start', '#ff1a1a');
+        root.style.setProperty('--bar-grad-end', '#ff6666');
+    }
+
+    if (theme === 'black') {
+        root.style.setProperty('--bg', '#000000');
+        root.style.setProperty('--fg', '#e8e8e8');
+        root.style.setProperty('--accent', '#ff2a2a');
+        root.style.setProperty('--accent-soft', '#ff4d4d');
+        root.style.setProperty('--accent-shadow', '#ff2a2a55');
+        root.style.setProperty('--card-bg', '#0d0d0d');
+        root.style.setProperty('--bar-grad-start', '#ff0000');
+        root.style.setProperty('--bar-grad-end', '#ff4d4d');
+    }
+
+    if (theme === 'gold') {
+        root.style.setProperty('--bg', '#0a0a00');
+        root.style.setProperty('--fg', '#fff7d1');
+        root.style.setProperty('--accent', '#ffcc00');
+        root.style.setProperty('--accent-soft', '#ffd700');
+        root.style.setProperty('--accent-shadow', '#ffcc0055');
+        root.style.setProperty('--card-bg', '#1a1a00');
+        root.style.setProperty('--bar-grad-start', '#ffcc00');
+        root.style.setProperty('--bar-grad-end', '#ffe680');
+    }
+
+    currentTheme = theme;
+
+    document.querySelectorAll('#themeGroup .pill').forEach(p => {
+        p.classList.toggle('active', p.dataset.theme === theme);
+    });
+
+    save();
+}
+
+/* ===========================
+   TAB SWITCHING
+   =========================== */
+function setTab(tab) {
+    currentTab = tab;
+
+    document.querySelectorAll('#tabGroup .pill').forEach(p => {
+        p.classList.toggle('active', p.dataset.tab === tab);
+    });
+
+    document.getElementById('eventDay').style.display =
+        (tab === 'weekly') ? 'inline-block' : 'none';
+
+    render();
+}
+
+/* ===========================
+   LAYOUT + SOUND TOGGLES
+   =========================== */
+function updateLayoutToggle() {
+    document.getElementById('layoutToggle').textContent =
+        'Wide layout: ' + (layoutWide ? 'ON' : 'OFF');
+
+    document.body.classList.toggle('wide', layoutWide);
+    save();
+}
+
+function updateSoundToggle() {
+    document.getElementById('soundToggle').textContent =
+        'Sound: ' + (soundOn ? 'ON' : 'OFF');
+    save();
+}
+
+function updateResetInfo() {
+    document.getElementById('resetInfo').textContent =
+        'Server reset: ' + resetOffsetHours + 'h offset';
+    save();
+}
+
+/* ===========================
+   ADD EVENT
+   =========================== */
+function addEvent(category = null, timeOverride = null, dayOverride = null) {
+    const nameInput = document.getElementById('eventName');
+    const timeInput = document.getElementById('eventTime');
+    const dayInput = document.getElementById('eventDay');
+    const offsetInput = document.getElementById('resetOffset');
+
+    let name = nameInput.value.trim();
+    let time = timeOverride || timeInput.value;
+    let day = dayOverride || dayInput.value;
+
+    if (category && !name) {
+        name = categoryNames[category];
+    }
+
+    if (!name || !time) {
+        alert("Enter a name and time");
+        return;
+    }
+
+    const offset = parseInt(offsetInput.value || "0", 10);
+    if (!isNaN(offset)) {
+        resetOffsetHours = offset;
+        updateResetInfo();
+    }
+
+    const list = eventsData[currentTab];
+    const ev = {
+        name,
+        time,
+        category: category || currentTab,
+        created: Date.now()
+    };
+
+    if (currentTab === 'weekly') {
+        ev.day = parseInt(day, 10);
+    }
+
+    list.push(ev);
+    save();
+    nameInput.value = '';
+    render();
+}
+
+/* ===========================
+   QUICK ADD BUTTONS
+   =========================== */
+document.querySelectorAll('.quick-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const type = btn.dataset.type;
+
+        const time = prompt(`Choose time for ${categoryNames[type]} (HH:MM):`, "00:00");
+        if (!time || !/^\d\d:\d\d$/.test(time)) return;
+
+        if (type === 'weekly') {
+            const day = prompt("Choose day (0=Sun ... 6=Sat):", "1");
+            if (day === null) return;
+            addEvent(type, time, day);
+        } else {
+            addEvent(type, time);
+        }
+    });
+});
+
+/* ===========================
+   IMPORT EVENTS
+   =========================== */
+document.getElementById('importBtn').onclick = () => {
+    const text = document.getElementById('importText').value.trim();
+    if (!text) return;
+
+    const lines = text.split('\n');
+
+    for (const line of lines) {
+        const match = line.match(/(Daily|Weekly|Boss|Shop|Raid):?\s*(.*?)\s*@\s*(.*)/i);
+        if (!match) continue;
+
+        const [, typeRaw, name, time] = match;
+        const type = typeRaw.toLowerCase();
+
+        if (type === 'weekly') {
+            const dayMatch = name.match(/(sun|mon|tue|wed|thu|fri|sat)/i);
+            const day = dayMatch
+                ? ["sun","mon","tue","wed","thu","fri","sat"].indexOf(dayMatch[1].slice(0,3).toLowerCase())
+                : 1;
+
+            addEvent("weekly", time, day);
+        } else {
+            addEvent(type, time);
+        }
+    }
+
+    document.getElementById('importText').value = '';
+};
+
+/* ===========================
+   REMOVE EVENT
+   =========================== */
+function removeEvent(index) {
+    eventsData[currentTab].splice(index, 1);
+    save();
+    render();
+}
+
+/* ===========================
+   NEXT OCCURRENCE CALCULATION
+   =========================== */
+function getNextOccurrence(ev, now) {
+    const target = new Date(now);
+    const [h, m] = ev.time.split(':').map(Number);
+
+    if (currentTab === 'daily') {
+        target.setHours(h, m, 0, 0);
+        if (target < now) target.setDate(target.getDate() + 1);
+    } else {
+        const currentDay = now.getDay();
+        let diff = ev.day - currentDay;
+
+        if (diff < 0 || (diff === 0 && (h < now.getHours() ||
+            (h === now.getHours() && m <= now.getMinutes())))) {
+            diff += 7;
+        }
+
+        target.setDate(target.getDate() + diff);
+        target.setHours(h, m, 0, 0);
+    }
+
+    if (resetOffsetHours !== 0) {
+        target.setHours(target.getHours() + resetOffsetHours);
+    }
+
+    return target;
+}
+
+/* ===========================
+   RENDER LOOP
+   =========================== */
+let lastStatusUpdate = 0;
+
+function render() {
+    const container = document.getElementById('events');
+    container.innerHTML = '';
+
+    const now = new Date();
+    const list = eventsData[currentTab].slice();
+
+    list.forEach(ev => {
+        ev._next = getNextOccurrence(ev, now);
+        ev._diff = ev._next - now;
+    });
+
+    list.sort((a, b) => a._diff - b._diff);
+
+    const totalMs = (currentTab === 'daily')
+        ? 24 * 3600000
+        : 7 * 24 * 3600000;
+
+    list.forEach((ev, index) => {
+        const diff = ev._diff;
+        const hours = Math.floor(diff / 3600000);
+        const mins = Math.floor((diff % 3600000) / 60000);
+        const secs = Math.floor((diff % 60000) / 1000);
+
+        const progress = Math.max(0, Math.min(100, 100 - (diff / totalMs * 100)));
+
+        const div = document.createElement('div');
+        div.className = 'event';
+
+        const main = document.createElement('div');
+        main.className = 'event-main';
+
+        const nameEl = document.createElement('div');
+        nameEl.className = 'event-name';
+        nameEl.textContent = `${categoryIcons[ev.category] || ""} ${ev.name} — ${ev.time}`;
+
+        const meta = document.createElement('div');
+        meta.className = 'event-meta';
+        meta.textContent = (currentTab === 'weekly')
+            ? `Weekly | ETA: ${hours}h ${mins}m ${secs}s`
+            : `Daily | ETA: ${hours}h ${mins}m ${secs}s`;
+
+        const cd = document.createElement('div');
+        cd.className = 'countdown';
+        cd.textContent = (diff <= 0)
+            ? 'LIVE NOW!'
+            : `Starts in: ${hours}h ${mins}m ${secs}s`;
+
+        const barC = document.createElement('div');
+        barC.className = 'bar-container';
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.width = progress + '%';
+        barC.appendChild(bar);
+
+        main.appendChild(nameEl);
+        main.appendChild(meta);
+        main.appendChild(cd);
+        main.appendChild(barC);
+
+        const actions = document.createElement('div');
+        actions.className = 'event-actions';
+
+        const tag = document.createElement('span');
+        tag.className = 'tag';
+        tag.textContent = categoryNames[ev.category] || currentTab;
+        actions.appendChild(tag);
+
+        const rm = document.createElement('button');
+        rm.className = 'remove-btn';
+        rm.textContent = 'Remove';
+        rm.onclick = () => removeEvent(eventsData[currentTab].indexOf(ev));
+        actions.appendChild(rm);
+
+        div.appendChild(main);
+        div.appendChild(actions);
+        container.appendChild(div);
+
+        if (diff <= 1000 && diff > -2000 && soundOn) {
+            document.getElementById('ding').play().catch(() => {});
+        }
+    });
+
+    const nowMs = now.getTime();
+    if (nowMs - lastStatusUpdate > 1000) {
+        lastStatusUpdate = nowMs;
+        document.getElementById('statusLine').textContent =
+            `Local time: ${now.toLocaleTimeString()} | Tab: ${currentTab.toUpperCase()} | Events: ${eventsData[currentTab].length}`;
+    }
+}
+
+/* ===========================
+   INITIALIZATION
+   =========================== */
+loadSettings();
+applyTheme(currentTheme);
+updateLayoutToggle();
+updateSoundToggle();
+updateResetInfo();
+setTab(currentTab);
+
+document.getElementById('addBtn').onclick = () => addEvent();
+
+document.getElementById('layoutToggle').onclick = () => {
+    layoutWide = !layoutWide;
+    updateLayoutToggle();
+};
+
+document.getElementById('soundToggle').onclick = () => {
+    soundOn = !soundOn;
+    updateSoundToggle();
+};
+
+document.getElementById('resetOffset').addEventListener('change', () => {
+    const v = parseInt(document.getElementById('resetOffset').value || "0", 10);
+    if (!isNaN(v)) {
+        resetOffsetHours = v;
+        updateResetInfo();
+    }
+});
+
+document.querySelectorAll('#themeGroup .pill').forEach(p => {
+    p.addEventListener('click', () => applyTheme(p.dataset.theme));
+});
+
+document.querySelectorAll('#tabGroup .pill').forEach(p => {
+    p.addEventListener('click', () => setTab(p.dataset.tab));
+});
+
+setInterval(render, 1000);
+render();
+
+</script>
+
+</body>
+</html>
