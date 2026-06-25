@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fragment Tracker</title>
+<style>
+:root {
+  --accent: #ff003c;
+  --accent-glow: #ff003c;
+  --text: #f5f5f5;
+  --panel-bg: #111;
+  --panel-border: #333;
+}
+
+/* Remove number input arrows (Chrome, Edge, Safari) */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Remove number input arrows (Firefox) */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #0a0a0a;
+  color: var(--text);
+  padding: 20px;
+  overflow-x: hidden;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 15px;
+  color: var(--accent);
+  text-shadow: 0 0 10px var(--accent-glow);
+}
+
+/* Layout */
+.two-column {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 30px;
+  width: 100%;
+  margin-top: 20px;
+}
+
+.left-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 260px;
+}
+
+.right-grid {
+  flex: 1;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 5px;
+  width: 100%;
+  max-width: 520px;
+}
+
+.cell {
+  aspect-ratio: 1 / 1;
+  padding: 4px;
+  border-radius: 6px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cell label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
+  text-shadow: 0 0 6px var(--accent-glow);
+  margin-top: 2px;
+}
+
+.qty-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 2px;
+}
+
+.qty-btn {
+  padding: 2px 6px;
+  font-size: 13px;
+  border-radius: 4px;
+  background: var(--accent);
+  color: #000;
+  cursor: pointer;
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+input[type="number"] {
+  width: 28px;
+  height: 20px;
+  font-size: 13px;
+  font-weight: bold;
+  text-align: center;
+  background: #000;
+  color: var(--accent);
+  border: 1px solid #444;
+  border-radius: 4px;
+}
+
+/* Panels */
+.panel {
+  padding: 15px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  box-shadow: 0 0 10px #000 inset;
+}
+
+.panel h2 {
+  text-align: center;
+  color: var(--accent);
+  text-shadow: 0 0 10px var(--accent-glow);
+  margin-bottom: 10px;
+}
+
+/* Text lists */
+#dupeList, #extraList, #missingList {
+  font-size: 15px;
+  font-weight: bold;
+  color: var(--accent);
+  text-shadow: 0 0 6px var(--accent-glow);
+  line-height: 1.8;
+  letter-spacing: 0.5px;
+  padding: 4px 6px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 6px;
+  border: 1px solid #222;
+}
+
+/* Map Badge */
+
+.map-badge {
+  margin: 20px auto;
+  padding: 10px 20px;
+  background: var(--panel-bg);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--accent);
+  text-shadow: 0 0 8px var(--accent-glow);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+
+/* Event status */
+#eventMessage {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--accent);
+  text-shadow: 0 0 8px var(--accent-glow);
+  transition: all 0.3s ease;
+}
+
+.event-active {
+  color: #00ff66;
+  text-shadow: 0 0 12px #00ff66;
+}
+
+/* Mobile */
+@media (max-width: 900px) {
+  .two-column { flex-direction: column; align-items: center; }
+  .left-stack { width: 100%; max-width: 400px; }
+  .right-grid { max-width: 100%; }
+  .grid { grid-template-columns: repeat(4, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<h1>Fragment Tracker</h1>
+
+<div class="two-column">
+
+  <!-- LEFT SIDE -->
+  <div class="left-stack">
+
+    <div class="panel">
+      <h2>Duplicates (≥2)</h2>
+      <div id="dupeList">None</div>
+    </div>
+
+    <div class="panel">
+      <h2>Extras (≥3)</h2>
+      <div id="extraList">None</div>
+    </div>
+
+    <div class="panel">
+      <h2>Missing</h2>
+      <div id="missingList">None</div>
+    </div>
+
+    <div class="panel event-status">
+      <h2>Event Status</h2>
+      <div id="eventMessage">No event right now</div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT SIDE -->
+  <div class="right-grid">
+    <div id="grid" class="grid"></div>
+
+    <input type="file" id="importFile" accept=".json" style="display:none;">
+
+    <div class="map-badge">
+      Completed Maps: <span id="mapCount">0</span>
+    </div>
+
+  </div>
+
+
+</div>
+
+<script>
+const STORAGE_KEY = "fragmentData_v1";
+
+/* Build grid */
+function createGrid() {
+  const grid = document.getElementById("grid");
+  for (let i = 0; i < 24; i++) {
+    const cell = document.createElement("div");
+    cell.className = "cell";
+
+    const label = document.createElement("label");
+    label.textContent = "F" + i;
+
+    const row = document.createElement("div");
+    row.className = "qty-row";
+
+    const minus = document.createElement("button");
+    minus.className = "qty-btn";
+    minus.textContent = "-";
+    minus.onclick = () => changeQty(i, -1);
+
+    const input = document.createElement("input");
+    input.type = "number";
+    input.id = "qty_" + i;
+    input.value = 0;
+    input.oninput = saveState;
+
+    const plus = document.createElement("button");
+    plus.className = "qty-btn";
+    plus.textContent = "+";
+    plus.onclick = () => changeQty(i, +1);
+
+    row.appendChild(minus);
+    row.appendChild(input);
+    row.appendChild(plus);
+
+    cell.appendChild(label);
+    cell.appendChild(row);
+    grid.appendChild(cell);
+  }
+}
+
+/* Change qty */
+function changeQty(i, delta) {
+  const box = document.getElementById("qty_" + i);
+  let v = parseInt(box.value || 0);
+  v = Math.max(0, v + delta);
+  box.value = v;
+  saveState();
+}
+
+/* Save state */
+function saveState() {
+  const data = [];
+  for (let i = 0; i < 24; i++) {
+    data.push({ qty: document.getElementById("qty_" + i).value });
+  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  updateDuplicates();
+  updateExtras();
+  updateMissing();
+}
+
+/* Load state */
+function loadState() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    JSON.parse(saved).forEach((item, i) => {
+      document.getElementById("qty_" + i).value = item.qty;
+    });
+  }
+  updateDuplicates();
+  updateExtras();
+  updateMissing();
+}
+
+/* Lists */
+function updateDuplicates() {
+  let arr = [];
+  for (let i = 0; i < 24; i++) {
+    if (parseInt(document.getElementById("qty_" + i).value) > 1) arr.push(i);
+  }
+  arr.sort((a,b)=>a-b);
+  dupeList.textContent = arr.length ? arr.map(n=>"F"+n).join(", ") : "None";
+}
+
+function updateExtras() {
+  let arr = [];
+  for (let i = 0; i < 24; i++) {
+    if (parseInt(document.getElementById("qty_" + i).value) > 2) arr.push(i);
+  }
+  arr.sort((a,b)=>a-b);
+  extraList.textContent = arr.length ? arr.map(n=>"F"+n).join(", ") : "None";
+}
+
+function updateMissing() {
+  let arr = [];
+  for (let i = 0; i < 24; i++) {
+    if (parseInt(document.getElementById("qty_" + i).value) === 0) arr.push(i);
+  }
+  arr.sort((a,b)=>a-b);
+  missingList.textContent = arr.length ? arr.map(n=>"F"+n).join(", ") : "None";
+}
+
+/* Event Status (5 minutes at XX:00 and XX:30) */
+function checkEventStatus() {
+  const now = new Date();
+  const m = now.getMinutes();
+  const s = now.getSeconds();
+  const msg = document.getElementById("eventMessage");
+
+  if ((m === 0 || m === 30) && s === 0) {
+    msg.textContent = "Event is ON!";
+    msg.classList.add("event-active");
+
+    setTimeout(() => {
+      msg.textContent = "No event right now";
+      msg.classList.remove("event-active");
+    }, 5 * 60 * 1000);
+  }
+}
+
+setInterval(checkEventStatus, 1000);
+
+
+/* Init */
+createGrid();
+loadState();
+</script>
+
+</body>
+</html>
